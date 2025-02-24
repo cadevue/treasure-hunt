@@ -1,8 +1,13 @@
+import ContentLayout from "./layouts/ContentLayout"
+import HeaderSection from "./sections/HeaderSection"
+import InstructionSection from "./sections/InstructionSection"
+
 function App() {
     return (
-        <h1 className="text-4xl font-bold text-center mt-20">
-            Treasure Hunt Solver
-        </h1>
+        <ContentLayout>
+            <HeaderSection />
+            <InstructionSection />
+        </ContentLayout>
     )
 }
 

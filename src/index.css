@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@theme {
+    --color-main-red: #CC2121;
+    --color-main-black: #0E0E0E;
+}
+
+#root {
+    color: var(--color-main-black);
+}
