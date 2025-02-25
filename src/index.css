@@ -8,3 +8,11 @@
 #root {
     color: var(--color-main-black);
 }
+
+h1 {
+    @apply text-4xl sm:text-5xl font-bold;
+}
+
+h2 {
+    @apply text-xl sm:text-2xl font-bold;
+}
