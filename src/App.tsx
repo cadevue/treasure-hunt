@@ -2,6 +2,8 @@ import ContentLayout from "./layouts/ContentLayout"
 import HeaderSection from "./sections/HeaderSection"
 import InputSection from "./sections/InputSection"
 import InstructionSection from "./sections/InstructionSection"
+import ResultSection from "./sections/ResultSection"
+import VisualizerSection from "./sections/VisualizerSection"
 
 function App() {
     return (
@@ -10,6 +12,8 @@ function App() {
                 <HeaderSection />
                 <InstructionSection />
                 <InputSection />
+                <VisualizerSection />
+                <ResultSection />
             </div>
         </ContentLayout>
     )
