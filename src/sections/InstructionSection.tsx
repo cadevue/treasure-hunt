@@ -3,11 +3,7 @@ const InstructionSection = () => {
         <section className="w-full flex flex-col pt-4 pb-6 px-6 sm:px-12 gap-4
             items-center justify-center border-2 border-main-black rounded-2xl"
         >
-            <h2>Use your Own Maze</h2>
-            <ol className="w-full text-left">
-                <li>1. Create your own config file (.txt format)</li>
-                <li>2. Upload it in the maze config field</li>
-            </ol>
+            <h2>Create your Own Maze</h2>
             <h3 className="w-full text-left">Symbol Specification</h3>
             <ul className="w-full text-left">
                 <li> <b>S</b> : Start Point </li>
