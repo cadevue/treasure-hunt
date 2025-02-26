@@ -90,7 +90,7 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
                 <select
                     name="maze"
                     id="maze"
-                    className="w-full p-2 border-2 border-main-black rounded-lg"
+                    className="w-full p-2 border-2 border-main-black rounded-lg text-base"
                     onChange={handleSelectedMazeChange}
                     defaultValue="custom"
                 >

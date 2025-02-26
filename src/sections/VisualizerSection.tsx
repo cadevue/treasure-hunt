@@ -10,7 +10,11 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
     return (
         <section className="w-full flex flex-col gap-4 items-center justify-center">
             <SectionTitle title="Visualizer" />
-            {/* <div className="w-full aspect-square bg-gray-200" /> */}
+            {
+                mazeState.length === 0 ? (
+                    <p className="w-full text-left">Maze is empty 😢</p>
+                ) : null
+            }
             <div className="grid" style={{ gridTemplateColumns: `repeat(${mazeState[0]?.length || 1}, 1fr)` }}>
                 {mazeState.map((row, rowIndex) =>
                     row.map((cell, colIndex) => (

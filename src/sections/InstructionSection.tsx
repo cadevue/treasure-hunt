@@ -12,7 +12,7 @@ const InstructionSection = () => {
                 <li> <b>X</b> : Grid that can’t be accessed (Wall) </li>
             </ul>
             <h3 className="w-full text-left">
-                All symbols are separated by a space. <br/> <br/>
+                All symbols must be separated by a space. <br/> <br/>
                 Example
             </h3>
             <p className="w-full text-left font-mono">
