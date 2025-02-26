@@ -16,3 +16,19 @@ h1 {
 h2 {
     @apply text-xl sm:text-2xl font-bold;
 }
+
+input[type='range'] {
+  @apply appearance-none cursor-pointer w-full h-1 bg-gray-500 rounded-full disabled:opacity-50;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
+}
+
+input[type='range']::-moz-range-thumb {
+  @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
+}
+
+input[type='range']::-moz-range-progress {
+  @apply bg-main-red h-1 rounded-full outline-none border-none;
+}
