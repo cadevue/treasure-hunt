@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MazeSymbol, SolveResult } from "../utils/types";
+import { MazeSymbol, SolveInput, SolveResult } from "../utils/types";
 import { PREDEFINED_MAZES } from "../utils/const";
 import { solveBFS, solveDFS } from "../utils/solver";
 
@@ -10,9 +10,15 @@ interface InputSectionProps {
 
 const VALID_SYMBOLS = new Set(Object.values(MazeSymbol));
 
-const parseMazeString = (mazeString: string): { maze: MazeSymbol[][] | null; error: string | null } => {
+const parseMazeString = (mazeString: string): { result : SolveInput | null; error: string | null } => {
+    if (mazeString.trim() === "") {
+        return { result: null, error: "Maze configuration cannot be empty" };
+    }
+
     const rows = mazeString.split("\n").map(row => row.trim());
     let invalidSymbol: string | null = null;
+    let treasureCount = 0;
+    let startCell = [-1, -1];
 
     for (const row of rows) {
         const symbols = row.split(" ") as MazeSymbol[];
@@ -21,20 +27,40 @@ const parseMazeString = (mazeString: string): { maze: MazeSymbol[][] | null; err
                 invalidSymbol = symbol;
                 break;
             }
+
+            if (symbol === MazeSymbol.Treasure) {
+                treasureCount++;
+            }
+
+            if (symbol === MazeSymbol.Start) {
+                if (startCell[0] !== -1) {
+                    return { result: null, error: "Invalid configuration: multiple start cells" };
+                }
+                startCell = [rows.indexOf(row), symbols.indexOf(symbol)];
+            }
         }
         if (invalidSymbol) break;
     }
 
     if (invalidSymbol) {
-        return { maze: null, error: `Invalid configuration: unknown symbol \`${invalidSymbol}\`` };
+        return { result: null, error: `Invalid configuration: unknown symbol \`${invalidSymbol}\`` };
+    }
+
+    if (treasureCount <= 0) {
+        return { result: null, error: "Invalid configuration: no treasures found" };
     }
 
     const maze = rows.map(row => row.split(" ") as MazeSymbol[]);
-    return { maze, error: null };
+    const result = {
+        maze: maze,
+        numOfTreasures: treasureCount,
+        startCell: startCell as [number, number],
+    };
+    return { result, error: null };
 };
 
 const InputSection = ({ setSolveResult }: InputSectionProps) => {
-    const [mazeState, setMazeState] = useState<MazeSymbol[][]>([]);
+    const [solveInputState, setSolveInput] = useState<SolveInput>({ maze: [], numOfTreasures: 0, startCell: [-1, -1] });
     const [mazeString, setMazeString] = useState("");
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
@@ -49,7 +75,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
 
             setMazeString("");
             setIsConfigReadOnly(false);
-            setMazeState([]);
+            setSolveInput({ maze: [], numOfTreasures: 0, startCell: [-1, -1] });
             setSolveResult(null);
             return;
         }
@@ -58,30 +84,24 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
         setMazeString(selectedMazeString || "");
         setIsConfigReadOnly(true);
 
-        const { maze } = parseMazeString(selectedMazeString);
-        setMazeState(maze || []);
+        const { result } = parseMazeString(selectedMazeString);
+        setSolveInput(result!);
         setSolveResult(null);
 
-    }, [mazeString, setMazeState]);
+    }, [mazeString, setSolveInput]);
 
 
     /** Handle Custom Input Parsing */
     useEffect(() => {
-        if (!mazeString.trim()) {
-            setMazeState([]);
-            setErrorMessage(null);
-            return;
-        }
-
-        const { maze, error } = parseMazeString(mazeString);
+        const { result, error } = parseMazeString(mazeString);
         if (error) {
             setErrorMessage(error);
             return;
         }
 
         setErrorMessage(null);
-        setMazeState(maze!);
-    }, [mazeString, setMazeState]);
+        setSolveInput(result!);
+    }, [mazeString, setSolveInput]);
 
 
     /** Handle Algorithm Selection */
@@ -92,22 +112,17 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
 
     /** On Search Button Clicked */
     const handleSearch = useCallback(() => {
-        if (!mazeState.length) {
-            setErrorMessage("Maze configuration is empty");
-            return;
-        }
-
         // Solve Maze
         let result : SolveResult;
         if (selectedAlgorithm === "bfs") {
-            result = solveBFS(mazeState);
+            result = solveBFS(solveInputState);
         } else {
-            result = solveDFS(mazeState);
+            result = solveDFS(solveInputState);
         }
 
         setSolveResult(result);
 
-    }, [mazeState, selectedAlgorithm, setSolveResult]);
+    }, [solveInputState, selectedAlgorithm, setSolveResult]);
 
     return (
         <section className="w-full flex flex-col gap-4">

@@ -1,6 +1,6 @@
-import { Direction, MazeSymbol, SolveResult } from "./types";
+import { Direction, MazeSymbol, SolveInput, SolveResult } from "./types";
 
-export function solveDFS(maze: MazeSymbol[][]) : SolveResult {
+export function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : SolveResult {
     return {
         maze: maze,
         route: [Direction.Up, Direction.Right, Direction.Down, Direction.Left],
@@ -9,7 +9,7 @@ export function solveDFS(maze: MazeSymbol[][]) : SolveResult {
     };
 }
 
-export function solveBFS(maze: MazeSymbol[][]) : SolveResult {
+export function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : SolveResult {
     return {
         maze: maze,
         route: [Direction.Up, Direction.Right, Direction.Down, Direction.Left],

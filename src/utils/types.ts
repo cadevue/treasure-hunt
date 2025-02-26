@@ -12,6 +12,12 @@ export enum Direction {
     Left     = "L",
 }
 
+export interface SolveInput {
+    maze: MazeSymbol[][];
+    numOfTreasures: number;
+    startCell: [number, number];
+}
+
 export interface SolveResult {
     maze: MazeSymbol[][];
     route: Direction[];
