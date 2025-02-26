@@ -1,12 +1,19 @@
 // import { Sprite, Stage } from "@pixi/react";
 import { useEffect, useRef, useState } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MazeSymbol } from "../utils/maze";
+import { MazeSymbol, SolveResult } from "../utils/types";
 interface VisualizerSectionProps {
-    mazeState: MazeSymbol[][];
+    solveResult: SolveResult | null;
 }
 
-const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
+const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
+    if (!solveResult) return (
+        <section className="w-full flex flex-col gap-4 items-center justify-center">
+            <SectionTitle title="Visualizer" />
+            <p className="w-full text-left">Visualization will appear here. Run the search algorithm first!</p>
+        </section>
+    );
+
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
@@ -17,11 +24,11 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
         const resizeCanvas = () => {
             if (!containerRef.current) return;
             const width = containerRef.current.getBoundingClientRect().width;
-            const cols = mazeState[0].length;
+            const cols = solveResult.maze[0].length;
             const cellSize = width / cols;
-            const height = mazeState.length * cellSize;
+            const height = solveResult.maze.length * cellSize;
 
-            const maxHeight = window.innerHeight * 0.8;
+            const maxHeight = window.innerHeight * 0.9;
             if (height > maxHeight) {
                 const scale = maxHeight / height;
                 setCanvasSize({ width: width * scale, height: height * scale });
@@ -33,7 +40,7 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
         return () => window.removeEventListener("resize", resizeCanvas);
-    }, [mazeState]);
+    }, [solveResult]);
 
     /** Handle Drawing */
     useEffect(() => {
@@ -43,8 +50,8 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        const cols = mazeState[0].length;
-        const rows = mazeState.length;
+        const cols = solveResult.maze[0].length;
+        const rows = solveResult.maze.length;
         const cellSize = canvasSize.width / cols;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -54,7 +61,7 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
                 const x = col * cellSize;
                 const y = row * cellSize;
 
-                const cell = mazeState[row][col];
+                const cell = solveResult.maze[row][col];
                 switch (cell) {
                     case MazeSymbol.Treasure:
                         ctx.fillStyle = "#ffff00";
@@ -74,14 +81,13 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
                 ctx.strokeRect(x, y, cellSize, cellSize);
             }
         }
-    }, [mazeState, canvasSize]);
+    }, [solveResult, canvasSize]);
 
     return (
         <section className="w-full flex flex-col gap-4 items-center justify-center">
             <SectionTitle title="Visualizer" />
-
         {
-            mazeState.length === 0 ? 
+            solveResult.maze.length === 0 ? 
 
             /** Maze is Empty */
             <p className="w-full text-left">Maze is empty 😢</p>
@@ -90,6 +96,11 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
             
             /** Maze is not Empty. Draw Maze in Canvas */
             <>
+            <div className="w-full" ref={containerRef}>
+                <canvas width={canvasSize.width} height={canvasSize.height} ref={canvasRef}
+                    className="border-2 border-main-black mx-auto"
+                />
+            </div>
             <div className="w-full flex flex-col gap-2">
                 <label htmlFor="time-per-step" className="font-bold">Time per Step (ms)</label>
                 <div className="w-full flex items-center gap-2">
@@ -103,12 +114,6 @@ const VisualizerSection = ({ mazeState }: VisualizerSectionProps) => {
             <button className="w-full p-2 bg-main-red text-white rounded-lg font-bold">
                 Visualize
             </button>
-
-            <div className="w-full" ref={containerRef}>
-                <canvas width={canvasSize.width} height={canvasSize.height} ref={canvasRef}
-                    className="border-2 border-main-black mx-auto"
-                />
-            </div>
             </>
 
         }

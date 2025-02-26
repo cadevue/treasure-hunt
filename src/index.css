@@ -1,34 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-    --color-main-red: #CC2121;
-    --color-main-black: #0E0E0E;
+  --color-main-red: #ba3a2c;
+  --color-main-black: #0e0e0e;
 }
 
 #root {
-    color: var(--color-main-black);
+  color: var(--color-main-black);
 }
 
 h1 {
-    @apply text-3xl sm:text-4xl font-bold;
+  @apply text-3xl sm:text-4xl font-bold;
 }
 
 h2 {
-    @apply text-xl sm:text-2xl font-bold;
+  @apply text-xl sm:text-2xl font-bold;
 }
 
-input[type='range'] {
+input[type="range"] {
   @apply appearance-none cursor-pointer w-full h-1 bg-gray-500 rounded-full disabled:opacity-50;
 }
 
-input[type='range']::-webkit-slider-thumb {
+input[type="range"]::-webkit-slider-thumb {
   @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
 }
 
-input[type='range']::-moz-range-thumb {
+input[type="range"]::-moz-range-thumb {
   @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
 }
 
-input[type='range']::-moz-range-progress {
+input[type="range"]::-moz-range-progress {
   @apply bg-main-red h-1 rounded-full outline-none border-none;
 }

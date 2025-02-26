@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import SectionTitle from "../components/SectionTitle";
+import { MazeSymbol, SolveResult } from "../utils/types";
 import { PREDEFINED_MAZES } from "../utils/const";
-import { MazeSymbol } from "../utils/maze";
+import { solveBFS, solveDFS } from "../utils/solver";
 
 interface InputSectionProps {
-    setMazeState: (maze: MazeSymbol[][]) => void;
+    setSolveResult: (result: any) => void;
 }
 
 const VALID_SYMBOLS = new Set(Object.values(MazeSymbol));
@@ -32,10 +33,14 @@ const parseMazeString = (mazeString: string): { maze: MazeSymbol[][] | null; err
     return { maze, error: null };
 };
 
-const InputSection = ({ setMazeState }: InputSectionProps) => {
+const InputSection = ({ setSolveResult }: InputSectionProps) => {
+    const [mazeState, setMazeState] = useState<MazeSymbol[][]>([]);
     const [mazeString, setMazeString] = useState("");
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(false);
+    const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    /** Handle Maze Selection */
     const handleSelectedMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
         const { value: mazeKey } = event.target;
 
@@ -45,6 +50,7 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
             setMazeString("");
             setIsConfigReadOnly(false);
             setMazeState([]);
+            setSolveResult(null);
             return;
         }
 
@@ -54,11 +60,12 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
 
         const { maze } = parseMazeString(selectedMazeString);
         setMazeState(maze || []);
+        setSolveResult(null);
 
     }, [mazeString, setMazeState]);
 
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    /** Handle Custom Input Parsing */
     useEffect(() => {
         if (!mazeString.trim()) {
             setMazeState([]);
@@ -66,19 +73,41 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
             return;
         }
 
-        const handler = setTimeout(() => {
-            const { maze, error } = parseMazeString(mazeString);
-            if (error) {
-                setErrorMessage(error);
-                return;
-            }
+        const { maze, error } = parseMazeString(mazeString);
+        if (error) {
+            setErrorMessage(error);
+            return;
+        }
 
-            setErrorMessage(null);
-            setMazeState(maze!);
-        }, 500);
-
-        return () => clearTimeout(handler);
+        setErrorMessage(null);
+        setMazeState(maze!);
     }, [mazeString, setMazeState]);
+
+
+    /** Handle Algorithm Selection */
+    const handleAlgorithmChange = useCallback((algorithm: "bfs" | "dfs") => {
+        setSelectedAlgorithm(algorithm);
+        setSolveResult(null);
+    }, [setSelectedAlgorithm, setSolveResult]);
+
+    /** On Search Button Clicked */
+    const handleSearch = useCallback(() => {
+        if (!mazeState.length) {
+            setErrorMessage("Maze configuration is empty");
+            return;
+        }
+
+        // Solve Maze
+        let result : SolveResult;
+        if (selectedAlgorithm === "bfs") {
+            result = solveBFS(mazeState);
+        } else {
+            result = solveDFS(mazeState);
+        }
+
+        setSolveResult(result);
+
+    }, [mazeState, selectedAlgorithm, setSolveResult]);
 
     return (
         <section className="w-full flex flex-col gap-4">
@@ -122,8 +151,37 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
                 )}
             </div>
 
+            {/* Algorithm Selection */}
+            <div className="w-full flex flex-col gap-2">
+                <label className="font-bold">Algorithm</label>
+                <div className="w-full flex gap-1">
+                    <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
+                        ${selectedAlgorithm === "bfs" 
+                            ? "bg-main-red text-white border-main-red"
+                            : "bg-white text-main-black border-main-black"
+                        }`}
+                        onClick={() => handleAlgorithmChange("bfs")}
+                    >
+                        BFS
+                    </button>
+                    <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
+                        ${selectedAlgorithm === "dfs" 
+                            ? "bg-main-red text-white border-main-red"
+                            : "bg-white text-main-black border-main-black"
+                        }`}
+                        onClick={() => handleAlgorithmChange("dfs")}
+                    >
+                        DFS
+                    </button>
+                </div>
+            </div>
+
             {/* Search Button */}
-            <button className="w-full p-2 bg-main-red text-white rounded-lg font-bold">
+            <button className="w-full p-2 mt-4 bg-main-red text-white rounded-lg font-bold 
+                disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red cursor-pointer"
+                disabled={!!errorMessage}
+                onClick={handleSearch}
+            >
                 Search
             </button>
         </section>
