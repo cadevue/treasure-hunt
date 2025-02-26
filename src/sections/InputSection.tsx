@@ -1,5 +1,4 @@
-import { useState, useCallback } from "react";
-
+import { useState, useCallback, useEffect } from "react";
 import SectionTitle from "../components/SectionTitle";
 import { PREDEFINED_MAZES } from "../utils/const";
 import { MazeSymbol } from "../utils/maze";
@@ -8,15 +7,36 @@ interface InputSectionProps {
     setMazeState: (maze: MazeSymbol[][]) => void;
 }
 
-const parseMazeString = (mazeString: string): MazeSymbol[][] => {
-    return mazeString.split("\n").map(row => row.split(" ") as MazeSymbol[]);
-}
+const VALID_SYMBOLS = new Set(Object.values(MazeSymbol));
+
+const parseMazeString = (mazeString: string): { maze: MazeSymbol[][] | null; error: string | null } => {
+    const rows = mazeString.split("\n").map(row => row.trim());
+    let invalidSymbol: string | null = null;
+
+    for (const row of rows) {
+        const symbols = row.split(" ") as MazeSymbol[];
+        for (const symbol of symbols) {
+            if (!VALID_SYMBOLS.has(symbol)) {
+                invalidSymbol = symbol;
+                break;
+            }
+        }
+        if (invalidSymbol) break;
+    }
+
+    if (invalidSymbol) {
+        return { maze: null, error: `Invalid configuration: unknown symbol \`${invalidSymbol}\`` };
+    }
+
+    const maze = rows.map(row => row.split(" ") as MazeSymbol[]);
+    return { maze, error: null };
+};
 
 const InputSection = ({ setMazeState }: InputSectionProps) => {
     const [mazeString, setMazeString] = useState("");
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(false);
 
-    const handleMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleSelectedMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
         const { value: mazeKey } = event.target;
 
         if (mazeKey === "custom") {
@@ -24,19 +44,46 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
 
             setMazeString("");
             setIsConfigReadOnly(false);
-            setMazeState(parseMazeString(mazeString));
+            setMazeState([]);
             return;
         }
 
-        const selectedMaze = PREDEFINED_MAZES[mazeKey as keyof typeof PREDEFINED_MAZES]?.value;
-        setMazeString(selectedMaze || "");
+        const selectedMazeString = PREDEFINED_MAZES[mazeKey as keyof typeof PREDEFINED_MAZES].value;
+        setMazeString(selectedMazeString || "");
         setIsConfigReadOnly(true);
-        setMazeState(parseMazeString(selectedMaze || ""));
-    }, [mazeString]);
+
+        const { maze } = parseMazeString(selectedMazeString);
+        setMazeState(maze || []);
+
+    }, [mazeString, setMazeState]);
+
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!mazeString.trim()) {
+            setMazeState([]);
+            setErrorMessage(null);
+            return;
+        }
+
+        const handler = setTimeout(() => {
+            const { maze, error } = parseMazeString(mazeString);
+            if (error) {
+                setErrorMessage(error);
+                return;
+            }
+
+            setErrorMessage(null);
+            setMazeState(maze!);
+        }, 500);
+
+        return () => clearTimeout(handler);
+    }, [mazeString, setMazeState]);
 
     return (
         <section className="w-full flex flex-col gap-4">
             <SectionTitle title="Input" />
+
             {/* Maze Selection */}
             <div className="w-full flex flex-col gap-2">
                 <label htmlFor="maze" className="font-bold">Select a Maze</label>
@@ -44,7 +91,7 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
                     name="maze"
                     id="maze"
                     className="w-full p-2 border-2 border-main-black rounded-lg"
-                    onChange={handleMazeChange}
+                    onChange={handleSelectedMazeChange}
                     defaultValue="custom"
                 >
                     <option value="custom">Custom Maze</option>
@@ -68,6 +115,11 @@ const InputSection = ({ setMazeState }: InputSectionProps) => {
                     disabled={isConfigReadOnly}
                     onChange={(e) => setMazeString(e.target.value)}
                 />
+
+                {/* Error Message */}
+                {errorMessage && (
+                    <p className="text-red-600 font-bold">{errorMessage}</p>
+                )}
             </div>
 
             {/* Search Button */}
