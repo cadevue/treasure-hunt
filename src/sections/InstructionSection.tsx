@@ -11,7 +11,10 @@ const InstructionSection = () => {
                 <li> <b>R</b> : Grid that can be accessed (Path) </li>
                 <li> <b>X</b> : Grid that can’t be accessed (Wall) </li>
             </ul>
-            <h3 className="w-full text-left">Example</h3>
+            <h3 className="w-full text-left">
+                All symbols are separated by a space. <br/> <br/>
+                Example
+            </h3>
             <p className="w-full text-left font-mono">
                 X T X X <br/>
                 X R R T <br/>

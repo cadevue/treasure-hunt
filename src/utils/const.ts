@@ -1,4 +1,4 @@
-export const PREMADE_MAZES = {
+export const PREDEFINED_MAZES = {
 "simple": {
     label: "Simple",
     value: [
@@ -53,7 +53,7 @@ export const PREMADE_MAZES = {
 "unique": {
     label: "Unique",
     value: [
-        "K R R R R R R",
+        "S R R R R R R",
         "X R X X T X R",
         "X R X X R X R",
         "X R X X R X R",
@@ -66,7 +66,7 @@ export const PREMADE_MAZES = {
 "maze-1": {
     label: "Maze 1",
     value: [
-        "K R R R",
+        "S R R R",
         "X R X T",
         "X T R R",
         "X R X X"
@@ -76,7 +76,7 @@ export const PREMADE_MAZES = {
 "maze-2": {
     label: "Maze 2",
     value: [
-        "K R R R R R X",
+        "S R R R R R X",
         "X R X T X R R",
         "X T X R X R X",
         "X R X X X T X",
@@ -87,7 +87,7 @@ export const PREMADE_MAZES = {
 "maze-3": {
     label: "Maze 3",
     value: [
-        "K R R R R",
+        "S R R R R",
         "X X R X T",
         "X X T X X",
     ].join("\n"),
@@ -96,7 +96,7 @@ export const PREMADE_MAZES = {
 "maze-4": {
     label: "Maze 4",
     value: [
-        "K R R R",
+        "S R R R",
         "R X X T",
         "R R R R",
         "X R X X",
@@ -106,7 +106,7 @@ export const PREMADE_MAZES = {
 "maze-5": {
     label: "Maze 5",
     value: [
-        "K R R R R",
+        "S R R R R",
         "R X X X R",
         "R X X X R",
         "R R R R R",
@@ -118,7 +118,7 @@ export const PREMADE_MAZES = {
 "maze-6": {
     label: "Maze 6",
     value: [
-        "K R R X X X X X X X",
+        "S R R X X X X X X X",
         "R X R R R R R X X X",
         "T X X X R X X X X X",
         "R R R R R R X X X X",
@@ -136,14 +136,14 @@ export const PREMADE_MAZES = {
     value: [
         "R R R R",
         "T X R R",
-        "K R R R",
+        "S R R R",
     ].join("\n"),
 },
 
 "maze-8": {
     label: "Maze 8",
     value: [
-        "K R R R R R",
+        "S R R R R R",
         "X R X T X X",
         "X T R R X X",
         "X R X X X X",
@@ -153,7 +153,7 @@ export const PREMADE_MAZES = {
 "maze-9": {
     label: "Maze 9",
     value: [
-        "K R R R",
+        "S R R R",
         "X X X X",
         "T R R R",
     ].join("\n"),
@@ -165,7 +165,7 @@ export const PREMADE_MAZES = {
         "R R R X X X X X X X",
         "R R X X X X X R R R",
         "R R R R X X X X X X",
-        "X X R R R K R R R R",
+        "X X R R R S R R R R",
         "X X X X X R X R X R",
         "X X X X R R R R R R",
         "X X X X X X R R R R",
@@ -182,7 +182,7 @@ export const PREMADE_MAZES = {
         "R X X R X X X",
         "R X X X R X X",
         "R X X X X R X",
-        "K R R X X X R",
+        "S R R X X X R",
     ].join("\n"),
 },
 

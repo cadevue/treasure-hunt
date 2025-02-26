@@ -1,27 +1,38 @@
 import { useState, useCallback } from "react";
 
 import SectionTitle from "../components/SectionTitle";
-import { PREMADE_MAZES } from "../const";
+import { PREDEFINED_MAZES } from "../utils/const";
+import { MazeSymbol } from "../utils/maze";
 
-const InputSection = () => {
-    const [mazeConfig, setMazeConfig] = useState("");
-    const [isConfigReadOnly, setIsConfigReadOnly] = useState(true);
+interface InputSectionProps {
+    setMazeState: (maze: MazeSymbol[][]) => void;
+}
+
+const parseMazeString = (mazeString: string): MazeSymbol[][] => {
+    return mazeString.split("\n").map(row => row.split(" ") as MazeSymbol[]);
+}
+
+const InputSection = ({ setMazeState }: InputSectionProps) => {
+    const [mazeString, setMazeString] = useState("");
+    const [isConfigReadOnly, setIsConfigReadOnly] = useState(false);
 
     const handleMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
         const { value: mazeKey } = event.target;
 
         if (mazeKey === "custom") {
-            if (!mazeConfig) return;
+            if (!mazeString) return;
 
-            setMazeConfig("");
+            setMazeString("");
             setIsConfigReadOnly(false);
+            setMazeState(parseMazeString(mazeString));
             return;
         }
 
-        const selectedMaze = PREMADE_MAZES[mazeKey as keyof typeof PREMADE_MAZES]?.value;
-        setMazeConfig(selectedMaze || "");
+        const selectedMaze = PREDEFINED_MAZES[mazeKey as keyof typeof PREDEFINED_MAZES]?.value;
+        setMazeString(selectedMaze || "");
         setIsConfigReadOnly(true);
-    }, [mazeConfig]);
+        setMazeState(parseMazeString(selectedMaze || ""));
+    }, [mazeString]);
 
     return (
         <section className="w-full flex flex-col gap-4">
@@ -37,7 +48,7 @@ const InputSection = () => {
                     defaultValue="custom"
                 >
                     <option value="custom">Custom Maze</option>
-                    {Object.entries(PREMADE_MAZES).map(([key, { label }]) => (
+                    {Object.entries(PREDEFINED_MAZES).map(([key, { label }]) => (
                         <option key={key} value={key}>{label}</option>
                     ))}
                 </select>
@@ -49,12 +60,13 @@ const InputSection = () => {
                 <textarea
                     name="maze-config"
                     id="maze-config"
-                    className="w-full p-2 border-2 border-main-black rounded-lg resize-none font-mono disabled:text-gray-500"
+                    className="w-full p-2 border-2 border-main-black rounded-lg resize-none font-mono 
+                        disabled:text-gray-500 disabled:bg-gray-200 disabled:border-gray-200"
                     placeholder="Write your maze configuration here"
                     rows={8}
-                    value={mazeConfig}
+                    value={mazeString}
                     disabled={isConfigReadOnly}
-                    onChange={(e) => setMazeConfig(e.target.value)}
+                    onChange={(e) => setMazeString(e.target.value)}
                 />
             </div>
 
