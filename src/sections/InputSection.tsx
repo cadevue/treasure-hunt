@@ -124,9 +124,10 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
                 setSearchDisabled(false);
             });
         } else {
-            const result = solveDFS(solveInputState);
-            setSolveResult(result);
-            setSearchDisabled(false);
+            solveDFS(solveInputState).then(result => {
+                setSolveResult(result);
+                setSearchDisabled(false);
+            });
         }
 
     }, [solveInputState, selectedAlgorithm, setSolveResult]);
