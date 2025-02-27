@@ -16,7 +16,7 @@ function App() {
 
     return (
         <>
-        <div className={`inset-0 bg-[url('assets/bg.jpg')] bg-cover bg-center bg-fixed opacity-5 fixed`}/>
+        <div className={`inset-0 bg-[url('assets/bg.jpg')] bg-cover bg-center opacity-5 fixed`}/>
         <ContentLayout>
             <div className="flex flex-col items-center gap-10 py-10">
                 <HeaderSection />
