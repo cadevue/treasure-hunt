@@ -181,7 +181,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
                 <div className="w-full flex gap-1 mt-1">
                     <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
                         ${selectedAlgorithm === "bfs" 
-                            ? "bg-main-red text-white border-main-red"
+                            ? "bg-main-accent text-white border-main-accent"
                             : "bg-white text-main-black border-main-black"
                         }`}
                         onClick={() => handleAlgorithmChange("bfs")}
@@ -190,7 +190,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
                     </button>
                     <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
                         ${selectedAlgorithm === "dfs" 
-                            ? "bg-main-red text-white border-main-red"
+                            ? "bg-main-accent text-white border-main-accent"
                             : "bg-white text-main-black border-main-black"
                         }`}
                         onClick={() => handleAlgorithmChange("dfs")}
@@ -201,7 +201,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
             </div>
 
             {/* Search Button */}
-            <button className="w-full p-2 mt-6 bg-main-red text-white rounded-lg font-bold 
+            <button className="w-full p-2 mt-6 bg-main-accent text-white rounded-lg font-bold 
                 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red cursor-pointer"
                 disabled={!!errorMessage || searchDisabled}
                 onClick={handleSearch}

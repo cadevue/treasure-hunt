@@ -1,9 +1,75 @@
-// import { Sprite, Stage } from "@pixi/react";
 import { useEffect, useRef, useState } from "react";
 import SectionTitle from "../components/SectionTitle";
 import { MapSymbol, SolveResult } from "../utils/types";
+
+import shipImg from "../assets/ship.png";
+import landImg from "../assets/land.png";
+import waterImg from "../assets/water.png";
+import treasureImg from "../assets/treasure.png";
+
 interface VisualizerSectionProps {
     solveResult: SolveResult | null;
+}
+
+const imageSources = {
+    "Ship": shipImg,
+    "Land": landImg,
+    "Water": waterImg,
+    "Treasure": treasureImg,
+};
+
+async function loadImages() : Promise<Record<string, HTMLImageElement>> {
+    const imagePromises = Object.entries(imageSources).map(async ([name, src]) => {
+        const img = new Image();
+        img.src = src;
+        await img.decode();
+        return [name, img] as const;
+    });
+
+    const images = await Promise.all(imagePromises);
+    return Object.fromEntries(images);
+}
+
+async function drawMap(canvas: HTMLCanvasElement, solveResult: SolveResult, images: Record<string, HTMLImageElement>) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const cols = solveResult.map[0].length;
+    const rows = solveResult.map.length;
+    const cellSize = canvas.width / cols;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const x = col * cellSize;
+            const y = row * cellSize;
+
+            const cell = solveResult.map[row][col];
+            switch (cell) {
+                case MapSymbol.Wall:
+                    ctx.drawImage(images["Land"], x, y, cellSize, cellSize);
+                    break;
+                case MapSymbol.Path:
+                case MapSymbol.Start:
+                case MapSymbol.Treasure:
+                    ctx.drawImage(images["Water"], x, y, cellSize, cellSize);
+                    break;
+                default:
+                    continue;
+            }
+
+            if (cell === MapSymbol.Start) {
+                ctx.drawImage(images["Ship"], x, y, cellSize, cellSize);
+            } 
+
+            else if (cell === MapSymbol.Treasure) {
+                ctx.drawImage(images["Treasure"], x, y, cellSize, cellSize);
+            }
+
+            ctx.strokeRect(x, y, cellSize, cellSize);
+        }
+    }
 }
 
 const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
@@ -18,6 +84,12 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
     const [timePerStep, setTimePerStep] = useState(100);
+    const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+
+    /** Load Images */
+    useEffect(() => {
+        loadImages().then(setImages);
+    }, []);
 
     /** Handle Resize */
     useEffect(() => {
@@ -28,7 +100,7 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
             const cellSize = width / cols;
             const height = solveResult.map.length * cellSize;
 
-            const maxHeight = window.innerHeight * 0.9;
+            const maxHeight = window.innerHeight * 0.75;
             if (height > maxHeight) {
                 const scale = maxHeight / height;
                 setCanvasSize({ width: width * scale, height: height * scale });
@@ -46,44 +118,8 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
     useEffect(() => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const cols = solveResult.map[0].length;
-        const rows = solveResult.map.length;
-        const cellSize = canvasSize.width / cols;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const x = col * cellSize;
-                const y = row * cellSize;
-
-                const cell = solveResult.map[row][col];
-                switch (cell) {
-                    case MapSymbol.Treasure:
-                        ctx.fillStyle = "#ffff00";
-                        break;
-                    case MapSymbol.Wall:
-                        ctx.fillStyle = "#000000";
-                        break;
-                    case MapSymbol.Path:
-                        ctx.fillStyle = "#ffffff";
-                        break;
-                    case MapSymbol.Start:
-                        ctx.fillStyle = "#00ff00";
-                        break;
-                    default:
-                        continue;
-                }
-
-                ctx.fillRect(x, y, cellSize, cellSize);
-                ctx.strokeRect(x, y, cellSize, cellSize);
-            }
-        }
-    }, [solveResult, canvasSize]);
+        drawMap(canvas, solveResult, images);
+    }, [solveResult, canvasRef, canvasSize, images]);
 
     return (
         <section className="w-full flex flex-col gap-4 items-center justify-center">
@@ -113,7 +149,7 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
                     <span>{timePerStep}</span>
                 </div>
             </div>
-            <button className="w-full p-2 bg-main-red text-white rounded-lg font-bold">
+            <button className="w-full p-2 bg-main-accent text-white rounded-lg font-bold">
                 Run Visualization
             </button>
             </>

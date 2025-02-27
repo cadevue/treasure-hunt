@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-main-red: #ba3a2c;
-  --color-main-black: #0e0e0e;
+  --color-main-accent-text: #0C9CCC;
+  --color-main-accent: #3BB5DE;
+  --color-main-black: #0E0E0E;
 }
 
 #root {
@@ -10,11 +11,11 @@
 }
 
 h1 {
-  @apply text-3xl sm:text-4xl font-bold;
+  @apply text-3xl sm:text-[42px] font-bold;
 }
 
 h2 {
-  @apply text-xl sm:text-2xl font-bold;
+  @apply text-lg sm:text-xl font-bold;
 }
 
 input[type="range"] {
@@ -22,13 +23,13 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
+  @apply appearance-none bg-main-accent h-4 w-4 rounded-full outline-none border-none;
 }
 
 input[type="range"]::-moz-range-thumb {
-  @apply appearance-none bg-main-red h-4 w-4 rounded-full outline-none border-none;
+  @apply appearance-none bg-main-accent h-4 w-4 rounded-full outline-none border-none;
 }
 
 input[type="range"]::-moz-range-progress {
-  @apply bg-main-red h-1 rounded-full outline-none border-none;
+  @apply bg-main-accent h-1 rounded-full outline-none border-none;
 }
