@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MazeSymbol, SolveInput, SolveResult } from "../utils/types";
+import { MazeSymbol, SolveInput } from "../utils/types";
 import { PREDEFINED_MAZES } from "../utils/const";
 import { solveBFS, solveDFS } from "../utils/solver";
 
@@ -60,11 +60,14 @@ const parseMazeString = (mazeString: string): { result : SolveInput | null; erro
 };
 
 const InputSection = ({ setSolveResult }: InputSectionProps) => {
-    const [solveInputState, setSolveInput] = useState<SolveInput>({ maze: [], numOfTreasures: 0, startCell: [-1, -1] });
-    const [mazeString, setMazeString] = useState("");
-    const [isConfigReadOnly, setIsConfigReadOnly] = useState(false);
+    const defaultInput = useMemo(() => parseMazeString(PREDEFINED_MAZES.simple.value).result!, []);
+
+    const [solveInputState, setSolveInput] = useState<SolveInput>(defaultInput);
+    const [mazeString, setMazeString] = useState(PREDEFINED_MAZES.simple.value);
+    const [isConfigReadOnly, setIsConfigReadOnly] = useState(true);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [searchDisabled, setSearchDisabled] = useState(false);
 
     /** Handle Maze Selection */
     const handleSelectedMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -112,15 +115,19 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
 
     /** On Search Button Clicked */
     const handleSearch = useCallback(() => {
-        // Solve Maze
-        let result : SolveResult;
-        if (selectedAlgorithm === "bfs") {
-            result = solveBFS(solveInputState);
-        } else {
-            result = solveDFS(solveInputState);
-        }
+        setSearchDisabled(true);
 
-        setSolveResult(result);
+        // Solve Maze
+        if (selectedAlgorithm === "bfs") {
+            solveBFS(solveInputState).then(result => {
+                setSolveResult(result);
+                setSearchDisabled(false);
+            });
+        } else {
+            const result = solveDFS(solveInputState);
+            setSolveResult(result);
+            setSearchDisabled(false);
+        }
 
     }, [solveInputState, selectedAlgorithm, setSolveResult]);
 
@@ -136,7 +143,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
                     id="maze"
                     className="w-full p-2 border-2 border-main-black rounded-lg text-base"
                     onChange={handleSelectedMazeChange}
-                    defaultValue="custom"
+                    defaultValue="simple"
                 >
                     <option value="custom">Custom Maze</option>
                     {Object.entries(PREDEFINED_MAZES).map(([key, { label }]) => (
@@ -194,7 +201,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
             {/* Search Button */}
             <button className="w-full p-2 mt-4 bg-main-red text-white rounded-lg font-bold 
                 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red cursor-pointer"
-                disabled={!!errorMessage}
+                disabled={!!errorMessage || searchDisabled}
                 onClick={handleSearch}
             >
                 Search

@@ -70,8 +70,10 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
                         ctx.fillStyle = "#000000";
                         break;
                     case MazeSymbol.Path:
-                    case MazeSymbol.Start:
                         ctx.fillStyle = "#ffffff";
+                        break;
+                    case MazeSymbol.Start:
+                        ctx.fillStyle = "#00ff00";
                         break;
                     default:
                         continue;
@@ -112,7 +114,7 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
                 </div>
             </div>
             <button className="w-full p-2 bg-main-red text-white rounded-lg font-bold">
-                Visualize
+                Run Visualization
             </button>
             </>
 

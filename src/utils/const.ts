@@ -21,23 +21,6 @@ export const PREDEFINED_MAZES = {
     ].join("\n")
 },
 
-"long": {
-    label: "Long",
-    value: [
-        "S T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-    ].join("\n"),
-},
-
 "triangle": {
     label: "Triangle",
     value: [
@@ -193,6 +176,23 @@ export const PREDEFINED_MAZES = {
         "L U P A C E",
         "K Y A N G B",
         "E G I N I Y"
+    ].join("\n"),
+},
+
+"long": {
+    label: "Long",
+    value: [
+        "S T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
+        "X T R X",
     ].join("\n"),
 },
 }
