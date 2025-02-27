@@ -85,30 +85,32 @@ async function drawMap(
 
             ctx.strokeRect(x, y, cellSize, cellSize);
         }
-
-        treasurePositions.forEach(([row, col]) => {
-            ctx.drawImage(images["Treasure"], col * cellSize, row * cellSize, cellSize, cellSize);
-        });
-
-        const [shipRow, shipCol] = shipPosition;
-        ctx.save();
-        ctx.translate((shipCol + 0.5) * cellSize, (shipRow + 0.5) * cellSize);
-        ctx.rotate((shipRotation[shipDirection] * Math.PI) / 180);
-        ctx.drawImage(images["Ship"], -cellSize / 2, -cellSize / 2, cellSize, cellSize);
-        ctx.restore();
     }
+
+    treasurePositions.forEach(([row, col]) => {
+        ctx.drawImage(images["Treasure"], col * cellSize, row * cellSize, cellSize, cellSize);
+    });
+
+    const [shipRow, shipCol] = shipPosition;
+    ctx.save();
+    ctx.translate((shipCol + 0.5) * cellSize, (shipRow + 0.5) * cellSize);
+    ctx.rotate((shipRotation[shipDirection] * Math.PI) / 180);
+    ctx.drawImage(images["Ship"], -cellSize / 2, -cellSize / 2, cellSize, cellSize);
+    ctx.restore();
 }
 
 const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
     const [speed, setSpeed] = useState(1);
     const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
-    const [shipPosition, setShipPosition] = useState<Point>([0, 0]);
-    const [shipDirection, setShipDirection] = useState<Direction>(Direction.Right);
-    const [treasurePositions, setTreasurePositions] = useState<Point[]>([]);
     const [isAnimating, setIsAnimating] = useState(false);
+
+    const shipPositionRef = useRef<Point>([0, 0]);
+    const shipDirectionRef = useRef<Direction>(Direction.Right);
+    const treasurePositionsRef = useRef<Point[]>([]);
 
     /** Load Images */
     useEffect(() => {
@@ -139,16 +141,18 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
     }, [solveResult]);
 
     /** Handle Drawing */
-        useEffect(() => {
+    useEffect(() => {
         if (!canvasRef.current || !solveResult) return;
-        drawMap(canvasRef.current, solveResult.map, images, shipPosition, shipDirection, treasurePositions);
-    }, [solveResult, canvasRef, canvasSize, images, shipPosition, shipDirection, treasurePositions]);
+        drawMap(canvasRef.current, solveResult.map, images, shipPositionRef.current, shipDirectionRef.current, treasurePositionsRef.current);
+    }, [solveResult, canvasRef, canvasSize, images]);
 
     /** Result sync */
     useEffect(() => {
         if (!solveResult) return
-        setShipPosition(solveResult.startCell);
-        setTreasurePositions(solveResult.treasureCells);
+
+        shipPositionRef.current = solveResult.startCell;
+        shipDirectionRef.current = Direction.Right;
+        treasurePositionsRef.current = solveResult.treasureCells;
     }, [solveResult]);
 
     const speedRef = useRef(speed);
@@ -161,9 +165,9 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
         setIsAnimating(true);
         setBlockAction(true);
 
-        setShipPosition(solveResult.startCell);
-        setShipDirection(Direction.Right);
-        setTreasurePositions(solveResult.treasureCells);
+        shipPositionRef.current = solveResult.startCell;
+        shipDirectionRef.current = Direction.Right;
+        treasurePositionsRef.current = solveResult.treasureCells;
 
         let index = 0;
         let [row, col] = solveResult.startCell;
@@ -215,7 +219,7 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
             const key = `${nrow},${ncol}`;
             if (remainingTreasures.has(key)) {
                 remainingTreasures.delete(key);
-                setTreasurePositions(prev => prev.filter(([r, c]) => r !== nrow || c !== ncol));
+                treasurePositionsRef.current = treasurePositionsRef.current.filter(([r, c]) => r !== nrow || c !== ncol);
             }
 
             if (nrow === target[0] && ncol === target[1]) {
@@ -227,8 +231,13 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
                 index++;
             }
 
-            setShipPosition([lerpedRow, lerpedCol]);
-            setShipDirection(direction);
+            shipPositionRef.current = [lerpedRow, lerpedCol];
+            shipDirectionRef.current = direction;
+
+            const canvas = canvasRef.current;
+            if (canvas) {
+                drawMap(canvas, solveResult!.map, images, [lerpedRow, lerpedCol], direction, treasurePositionsRef.current);
+            }
 
             requestAnimationFrame(animate);
         }
@@ -277,8 +286,15 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
                 Run Visualization
             </button>
             </>
-
         }
+
+            <p className="text-sm">
+                Important Note: <br/>
+
+                The visualization does not represent the actual path taken by the algorithm,
+                but more of an illustration of how the algorithm works. In the actual implementation, backtracking
+                is not necessary as the algorithm can easily jump from one cell to another.
+            </p>
         </section>
     );
 }

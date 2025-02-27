@@ -8,6 +8,7 @@ import ResultSection from "./sections/ResultSection"
 import VisualizerSection from "./sections/VisualizerSection"
 
 import { SolveResult } from "./utils/types"
+import FooterSection from "./sections/FooterSection"
 
 function App() {
     const [solveResult, setSolveResult] = useState<SolveResult | null>(null)
@@ -21,6 +22,7 @@ function App() {
                 <InputSection setSolveResult={setSolveResult} blockAction={blockAction} />
                 <VisualizerSection solveResult={solveResult} setBlockAction={setBlockAction} />
                 <ResultSection solveResult={solveResult} />
+                <FooterSection />
             </div>
         </ContentLayout>
     )

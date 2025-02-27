@@ -168,14 +168,4 @@ export const PREDEFINED_MAPS = {
         "S R R X X X R",
     ].join("\n"),
 },
-
-"error": {
-    label: "Error",
-    value: [
-        "J A N G A N",
-        "L U P A C E",
-        "K Y A N G B",
-        "E G I N I Y"
-    ].join("\n"),
-},
 }

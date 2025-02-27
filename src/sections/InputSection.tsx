@@ -11,130 +11,107 @@ interface InputSectionProps {
 
 const VALID_SYMBOLS = new Set(Object.values(MapSymbol));
 
-const parseMapString = (mapString: string): { result : SolveInput | null; error: string | null } => {
-    if (mapString.trim() === "") {
-        return { result: null, error: "Map configuration cannot be empty" };
-    }
+const parseMapString = (mapString: string): { result: SolveInput | null; error: string | null } => {
+    const rows = mapString.trim().toUpperCase().split("\n").map(row => row.trim());
 
-    const rows = mapString.split("\n").map(row => row.trim());
     let invalidSymbol: string | null = null;
-    let treasureCount = 0;
-    let startCell = [-1, -1];
-    let treasureCells: Point[] = [];
+    let startCell: [number, number] | null = null;
+    const treasureCells: Point[] = [];
 
-    for (const row of rows) {
+    const map = rows.map((row, rowIndex) => {
         const symbols = row.split(" ") as MapSymbol[];
-        for (const symbol of symbols) {
+        symbols.forEach((symbol, colIndex) => {
             if (!VALID_SYMBOLS.has(symbol)) {
-                invalidSymbol = symbol;
-                break;
+                invalidSymbol = `Unknown symbol ${symbol}`;
+                return;
             }
-
-            if (symbol === MapSymbol.Treasure) {
-                treasureCount++;
-                treasureCells.push([rows.indexOf(row), symbols.indexOf(symbol)]);
-            }
-
+            if (symbol === MapSymbol.Treasure) treasureCells.push([rowIndex, colIndex]);
             if (symbol === MapSymbol.Start) {
-                if (startCell[0] !== -1) {
-                    return { result: null, error: "Invalid configuration: multiple start cells" };
-                }
-                startCell = [rows.indexOf(row), symbols.indexOf(symbol)];
+                if (startCell) invalidSymbol = "Multiple start cells";
+                startCell = [rowIndex, colIndex];
             }
-        }
-        if (invalidSymbol) break;
-    }
+        });
+        return symbols;
+    });
 
-    if (invalidSymbol) {
-        return { result: null, error: `Invalid configuration: unknown symbol \`${invalidSymbol}\`` };
-    }
+    if (invalidSymbol) return { result: null, error: `Invalid configuration: ${invalidSymbol}` };
+    if (!treasureCells.length) return { result: null, error: "Invalid configuration: no treasures found" };
+    if (!startCell) return { result: null, error: "Invalid configuration: missing start cell" };
 
-    if (treasureCount <= 0) {
-        return { result: null, error: "Invalid configuration: no treasures found" };
-    }
-
-    const map = rows.map(row => row.split(" ") as MapSymbol[]);
-    const result = {
-        map: map,
-        treasureCells: treasureCells,
-        numOfTreasures: treasureCount,
-        startCell: startCell as [number, number],
-    };
-    return { result, error: null };
+    return { result: { map, treasureCells, numOfTreasures: treasureCells.length, startCell }, error: null };
 };
 
 const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
     const defaultInput = useMemo(() => parseMapString(PREDEFINED_MAPS.default.value).result!, []);
+    const mapOptions = useMemo(() => 
+        Object.entries(PREDEFINED_MAPS).map(([key, { label }]) => (
+            <option key={key} value={key}>{label}</option>
+        )), []
+    );
 
-    const [solveInputState, setSolveInput] = useState<SolveInput>(defaultInput);
+    const [solveInputState, setSolveInput] = useState(defaultInput);
     const [mapString, setMapString] = useState(PREDEFINED_MAPS.default.value);
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(true);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [searchDisabled, setSearchDisabled] = useState(false);
+    const [searchCompleted, setSearchCompleted] = useState(false);
+
+    /** Handle Reset State */
+    const resetState = useCallback(() => {
+        setSolveResult(null);
+        setSearchCompleted(false);
+    }, [setSolveResult]);
 
     /** Handle Map Selection */
     const handleSelectedMapChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value: mapKey } = event.target;
+        const mapKey = event.target.value;
+        resetState();
 
         if (mapKey === "custom") {
-            if (!mapString) return;
-
             setMapString("");
             setIsConfigReadOnly(false);
             setSolveInput({ map: [], numOfTreasures: 0, startCell: [-1, -1], treasureCells: [] });
-            setSolveResult(null);
             return;
         }
 
-        const selectedMapString = PREDEFINED_MAPS[mapKey as keyof typeof PREDEFINED_MAPS].value;
-        setMapString(selectedMapString || "");
+        const selectedMapString = PREDEFINED_MAPS[mapKey as keyof typeof PREDEFINED_MAPS]?.value || "";
+        setMapString(selectedMapString);
         setIsConfigReadOnly(true);
 
         const { result } = parseMapString(selectedMapString);
-        setSolveInput(result!);
-        setSolveResult(null);
-
-    }, [mapString, setSolveInput]);
-
+        if (result) setSolveInput(result);
+    }, [resetState]);
 
     /** Handle Custom Input Parsing */
     useEffect(() => {
-        const { result, error } = parseMapString(mapString);
-        if (error) {
+        if (!isConfigReadOnly) {
+            const { result, error } = parseMapString(mapString);
             setErrorMessage(error);
-            return;
+            if (result) setSolveInput(result);
         }
-
-        setErrorMessage(null);
-        setSolveInput(result!);
-    }, [mapString, setSolveInput]);
-
+    }, [mapString, isConfigReadOnly]);
 
     /** Handle Algorithm Selection */
     const handleAlgorithmChange = useCallback((algorithm: "bfs" | "dfs") => {
         setSelectedAlgorithm(algorithm);
-        setSolveResult(null);
-    }, [setSelectedAlgorithm, setSolveResult]);
+        resetState();
+    }, [resetState]);
 
-    /** On Search Button Clicked */
+    /** Handle Search Execution */
     const handleSearch = useCallback(() => {
+        if (searchDisabled) return;
+
         setSearchDisabled(true);
+        const solveFunction = selectedAlgorithm === "bfs" ? solveBFS : solveDFS;
 
-        // Solve Map
-        if (selectedAlgorithm === "bfs") {
-            solveBFS(solveInputState).then(result => {
-                setSolveResult(result);
+        solveFunction(solveInputState)
+            .then(setSolveResult)
+            .finally(() => {
                 setSearchDisabled(false);
+                setSearchCompleted(true);
             });
-        } else {
-            solveDFS(solveInputState).then(result => {
-                setSolveResult(result);
-                setSearchDisabled(false);
-            });
-        }
-
-    }, [solveInputState, selectedAlgorithm, setSolveResult]);
+    }, [solveInputState, selectedAlgorithm, setSolveResult, searchDisabled]);
 
     return (
         <section className="w-full flex flex-col gap-4">
@@ -144,24 +121,20 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
             <div className="w-full flex flex-col gap-2">
                 <label htmlFor="map" className="font-bold">Select a Map</label>
                 <select
-                    name="map"
                     id="map"
                     className="w-full p-2 border-2 border-main-black rounded-lg text-base"
                     onChange={handleSelectedMapChange}
                     defaultValue="default"
                 >
                     <option value="custom">Custom Map</option>
-                    {Object.entries(PREDEFINED_MAPS).map(([key, { label }]) => (
-                        <option key={key} value={key}>{label}</option>
-                    ))}
+                    {mapOptions}
                 </select>
             </div>
-            
+
             {/* Map Configuration */}
             <div className="w-full flex flex-col gap-2">
                 <label htmlFor="map-config" className="font-bold">Map Configuration</label>
                 <textarea
-                    name="map-config"
                     id="map-config"
                     className="w-full p-2 border-2 border-main-black rounded-lg resize-none font-mono 
                         disabled:text-gray-500 disabled:bg-gray-200 disabled:border-gray-200"
@@ -171,36 +144,26 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
                     disabled={isConfigReadOnly}
                     onChange={(e) => setMapString(e.target.value)}
                 />
-
-                {/* Error Message */}
-                {errorMessage && (
-                    <p className="text-red-600 font-bold">{errorMessage}</p>
-                )}
+                {errorMessage && <p className="text-red-600 font-bold">{errorMessage}</p>}
             </div>
 
             {/* Algorithm Selection */}
             <div className="w-full flex flex-col gap-2">
                 <label className="font-bold">Algorithm</label>
-                <p> The search algorithm will prioritize direction in the order of Right, Down, Up, Left </p>
+                <p>The search algorithm will prioritize direction in the order of Right, Down, Up, Left</p>
                 <div className="w-full flex gap-1 mt-1">
-                    <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
-                        ${selectedAlgorithm === "bfs" 
-                            ? "bg-main-accent text-white border-main-accent"
-                            : "bg-white text-main-black border-main-black"
-                        }`}
-                        onClick={() => handleAlgorithmChange("bfs")}
-                    >
-                        BFS
-                    </button>
-                    <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
-                        ${selectedAlgorithm === "dfs" 
-                            ? "bg-main-accent text-white border-main-accent"
-                            : "bg-white text-main-black border-main-black"
-                        }`}
-                        onClick={() => handleAlgorithmChange("dfs")}
-                    >
-                        DFS
-                    </button>
+                    {["bfs", "dfs"].map((alg) => (
+                        <button key={alg}
+                            className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
+                                ${selectedAlgorithm === alg
+                                    ? "bg-main-accent text-white border-main-accent"
+                                    : "bg-white text-main-black border-main-black"
+                                }`}
+                            onClick={() => handleAlgorithmChange(alg as "bfs" | "dfs")}
+                        >
+                            {alg.toUpperCase()}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -212,6 +175,7 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
             >
                 Search
             </button>
+            {searchCompleted && <p>Search Completed!</p>}
         </section>
     );
 };
