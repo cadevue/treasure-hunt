@@ -123,9 +123,11 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
                 <label htmlFor="map" className="font-bold">Select a Map</label>
                 <select
                     id="map"
-                    className="w-full p-2 border-2 border-main-black rounded-lg text-base"
+                    className="w-full p-2 border-2 border-main-black rounded-lg cursor-pointer
+                    text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     onChange={handleSelectedMapChange}
                     defaultValue="default"
+                    disabled={blockAction}
                 >
                     <option value="custom">Custom Map</option>
                     {mapOptions}
@@ -142,7 +144,7 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
                     placeholder="Write your map configuration here"
                     rows={8}
                     value={mapString}
-                    disabled={isConfigReadOnly}
+                    disabled={isConfigReadOnly || blockAction}
                     onChange={(e) => setMapString(e.target.value)}
                 />
                 {errorMessage && <p className="text-red-600 font-bold">{errorMessage}</p>}
@@ -155,12 +157,13 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
                 <div className="w-full flex gap-1 mt-1">
                     {["bfs", "dfs"].map((alg) => (
                         <button key={alg}
-                            className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
+                            className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
                                 ${selectedAlgorithm === alg
                                     ? "bg-main-accent text-white border-main-accent"
                                     : "bg-white text-main-black border-main-black"
                                 }`}
                             onClick={() => handleAlgorithmChange(alg as "bfs" | "dfs")}
+                            disabled={blockAction}
                         >
                             {alg.toUpperCase()}
                         </button>

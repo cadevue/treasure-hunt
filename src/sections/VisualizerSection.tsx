@@ -280,7 +280,8 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
                     <span>{speed.toFixed(2)}x</span>
                 </div>
             </div>
-            <button className="w-full p-2 mt-6 bg-main-accent text-white rounded-lg font-bold cursor-pointer disabled:opacity-50"
+            <button className="w-full p-2 mt-6 bg-main-accent text-white rounded-lg font-bold cursor-pointer 
+                disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={animateShip} disabled={isAnimating}
             >
                 Run Visualization
