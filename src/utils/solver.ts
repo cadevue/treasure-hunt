@@ -1,4 +1,4 @@
-import { Direction, MazeSymbol, Point, SolveInput, SolveResult } from "./types";
+import { Direction, MapSymbol, Point, SolveInput, SolveResult } from "./types";
 
 const DirectionsOffset = {
     [Direction.Up]    :  [ 0,  1],
@@ -22,7 +22,7 @@ function findDirection(start: [number, number], end: [number, number]): Directio
     return Direction.Right;
 }
 
-export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
+export async function solveBFS({map, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
     const startTime = performance.now();
 
     const queue : Point[] = [];
@@ -41,8 +41,8 @@ export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : 
         const newCol = col + dCol;
         const newKey = `${newRow},${newCol}`;
 
-        if (newRow < 0 || newRow >= maze.length || newCol < 0 || newCol >= maze[0].length) continue;
-        if (maze[newRow][newCol] === MazeSymbol.Wall) continue;
+        if (newRow < 0 || newRow >= map.length || newCol < 0 || newCol >= map[0].length) continue;
+        if (map[newRow][newCol] === MapSymbol.Wall) continue;
         if (visited.has(newKey)) continue;
 
         queue.push([newRow, newCol]);
@@ -102,7 +102,7 @@ export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : 
         latestVisited = [row, col];
         visited.add(`${row},${col}`);
 
-        if (maze[row][col] === MazeSymbol.Treasure) {
+        if (map[row][col] === MapSymbol.Treasure) {
             numOfTreasures--;
             treasureLocations.push([row, col]);
             pointsToTreasure.set(`${row},${col}`, allCurrentParents.reverse());
@@ -116,8 +116,8 @@ export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : 
             const newCol = col + dCol;
             const newKey = `${newRow},${newCol}`;
 
-            if (newRow < 0 || newRow >= maze.length || newCol < 0 || newCol >= maze[0].length) continue;
-            if (maze[newRow][newCol] === MazeSymbol.Wall) continue;
+            if (newRow < 0 || newRow >= map.length || newCol < 0 || newCol >= map[0].length) continue;
+            if (map[newRow][newCol] === MapSymbol.Wall) continue;
             if (visited.has(newKey)) continue;
 
             queue.push([newRow, newCol]);
@@ -157,7 +157,7 @@ export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : 
     const elapsedTime = performance.now() - startTime;
     
     return {
-        maze: maze,
+        map: map,
         searchRoute: searchRoute,
         finalRoute: finalRoute,
         nodesVisited: visited.size,
@@ -165,7 +165,7 @@ export async function solveBFS({maze, numOfTreasures, startCell}: SolveInput) : 
     };
 }
 
-export async function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
+export async function solveDFS({map, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
     const startTime = performance.now();
 
     const stack: Point[] = [];
@@ -184,8 +184,8 @@ export async function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : 
         const newCol = col + dCol;
         const newKey = `${newRow},${newCol}`;
 
-        if (newRow < 0 || newRow >= maze.length || newCol < 0 || newCol >= maze[0].length) continue;
-        if (maze[newRow][newCol] === MazeSymbol.Wall) continue;
+        if (newRow < 0 || newRow >= map.length || newCol < 0 || newCol >= map[0].length) continue;
+        if (map[newRow][newCol] === MapSymbol.Wall) continue;
         if (visited.has(newKey)) continue;
 
         stack.push([newRow, newCol]);
@@ -245,7 +245,7 @@ export async function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : 
         latestVisited = [row, col];
         visited.add(`${row},${col}`);
 
-        if (maze[row][col] === MazeSymbol.Treasure) {
+        if (map[row][col] === MapSymbol.Treasure) {
             numOfTreasures--;
             treasureLocations.push([row, col]);
             pointsToTreasure.set(`${row},${col}`, allCurrentParents.reverse());
@@ -259,8 +259,8 @@ export async function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : 
             const newCol = col + dCol;
             const newKey = `${newRow},${newCol}`;
 
-            if (newRow < 0 || newRow >= maze.length || newCol < 0 || newCol >= maze[0].length) continue;
-            if (maze[newRow][newCol] === MazeSymbol.Wall) continue;
+            if (newRow < 0 || newRow >= map.length || newCol < 0 || newCol >= map[0].length) continue;
+            if (map[newRow][newCol] === MapSymbol.Wall) continue;
             if (visited.has(newKey)) continue;
 
             stack.push([newRow, newCol]);
@@ -300,7 +300,7 @@ export async function solveDFS({maze, numOfTreasures, startCell}: SolveInput) : 
     const elapsedTime = performance.now() - startTime;
 
     return {
-        maze: maze,
+        map: map,
         searchRoute: searchRoute,
         finalRoute: finalRoute,
         nodesVisited: visited.size,

@@ -1,7 +1,7 @@
 // import { Sprite, Stage } from "@pixi/react";
 import { useEffect, useRef, useState } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MazeSymbol, SolveResult } from "../utils/types";
+import { MapSymbol, SolveResult } from "../utils/types";
 interface VisualizerSectionProps {
     solveResult: SolveResult | null;
 }
@@ -10,7 +10,7 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
     if (!solveResult) return (
         <section className="w-full flex flex-col gap-4 items-center justify-center">
             <SectionTitle title="Visualizer" />
-            <p className="w-full text-left">Visualization will appear here. Run the search algorithm first!</p>
+            <p className="w-full text-left">Visualization will appear here after the search has been done!</p>
         </section>
     );
 
@@ -24,9 +24,9 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
         const resizeCanvas = () => {
             if (!containerRef.current) return;
             const width = containerRef.current.getBoundingClientRect().width;
-            const cols = solveResult.maze[0].length;
+            const cols = solveResult.map[0].length;
             const cellSize = width / cols;
-            const height = solveResult.maze.length * cellSize;
+            const height = solveResult.map.length * cellSize;
 
             const maxHeight = window.innerHeight * 0.9;
             if (height > maxHeight) {
@@ -50,8 +50,8 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        const cols = solveResult.maze[0].length;
-        const rows = solveResult.maze.length;
+        const cols = solveResult.map[0].length;
+        const rows = solveResult.map.length;
         const cellSize = canvasSize.width / cols;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -61,18 +61,18 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
                 const x = col * cellSize;
                 const y = row * cellSize;
 
-                const cell = solveResult.maze[row][col];
+                const cell = solveResult.map[row][col];
                 switch (cell) {
-                    case MazeSymbol.Treasure:
+                    case MapSymbol.Treasure:
                         ctx.fillStyle = "#ffff00";
                         break;
-                    case MazeSymbol.Wall:
+                    case MapSymbol.Wall:
                         ctx.fillStyle = "#000000";
                         break;
-                    case MazeSymbol.Path:
+                    case MapSymbol.Path:
                         ctx.fillStyle = "#ffffff";
                         break;
-                    case MazeSymbol.Start:
+                    case MapSymbol.Start:
                         ctx.fillStyle = "#00ff00";
                         break;
                     default:
@@ -89,14 +89,14 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
         <section className="w-full flex flex-col gap-4 items-center justify-center">
             <SectionTitle title="Visualizer" />
         {
-            solveResult.maze.length === 0 ? 
+            solveResult.map.length === 0 ? 
 
-            /** Maze is Empty */
-            <p className="w-full text-left">Maze is empty 😢</p>
+            /** Map is Empty */
+            <p className="w-full text-left">Map is empty 😢</p>
 
             :
             
-            /** Maze is not Empty. Draw Maze in Canvas */
+            /** Map is not Empty. Draw Map in Canvas */
             <>
             <div className="w-full" ref={containerRef}>
                 <canvas width={canvasSize.width} height={canvasSize.height} ref={canvasRef}

@@ -4,7 +4,7 @@ const HeaderSection = () => {
             <h1 className="text-main-red">
                 Treasure Hunt Solver&nbsp;🧭
             </h1>
-            <p className="text-base sm:text-xl">Search a Treasure in a maze using <b>BFS/DFS</b></p>
+            <p className="text-base sm:text-xl">Search a Treasure in a map using <b>BFS/DFS</b></p>
         </header>
     )
 }

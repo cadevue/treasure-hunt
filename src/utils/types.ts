@@ -1,4 +1,4 @@
-export enum MazeSymbol {
+export enum MapSymbol {
     Start    = "S",
     Treasure = "T",
     Path     = "R",
@@ -15,13 +15,13 @@ export enum Direction {
 export type Point = [number, number];
 
 export interface SolveInput {
-    maze: MazeSymbol[][];
+    map: MapSymbol[][];
     numOfTreasures: number;
     startCell: Point;
 }
 
 export interface SolveResult {
-    maze: MazeSymbol[][];
+    map: MapSymbol[][];
     searchRoute: Direction[];
     finalRoute: Direction[];
     nodesVisited: number;

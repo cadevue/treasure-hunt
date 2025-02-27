@@ -1,38 +1,38 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MazeSymbol, SolveInput } from "../utils/types";
-import { PREDEFINED_MAZES } from "../utils/const";
+import { MapSymbol, SolveInput } from "../utils/types";
+import { PREDEFINED_MAPS } from "../utils/const";
 import { solveBFS, solveDFS } from "../utils/solver";
 
 interface InputSectionProps {
     setSolveResult: (result: any) => void;
 }
 
-const VALID_SYMBOLS = new Set(Object.values(MazeSymbol));
+const VALID_SYMBOLS = new Set(Object.values(MapSymbol));
 
-const parseMazeString = (mazeString: string): { result : SolveInput | null; error: string | null } => {
-    if (mazeString.trim() === "") {
-        return { result: null, error: "Maze configuration cannot be empty" };
+const parseMapString = (mapString: string): { result : SolveInput | null; error: string | null } => {
+    if (mapString.trim() === "") {
+        return { result: null, error: "Map configuration cannot be empty" };
     }
 
-    const rows = mazeString.split("\n").map(row => row.trim());
+    const rows = mapString.split("\n").map(row => row.trim());
     let invalidSymbol: string | null = null;
     let treasureCount = 0;
     let startCell = [-1, -1];
 
     for (const row of rows) {
-        const symbols = row.split(" ") as MazeSymbol[];
+        const symbols = row.split(" ") as MapSymbol[];
         for (const symbol of symbols) {
             if (!VALID_SYMBOLS.has(symbol)) {
                 invalidSymbol = symbol;
                 break;
             }
 
-            if (symbol === MazeSymbol.Treasure) {
+            if (symbol === MapSymbol.Treasure) {
                 treasureCount++;
             }
 
-            if (symbol === MazeSymbol.Start) {
+            if (symbol === MapSymbol.Start) {
                 if (startCell[0] !== -1) {
                     return { result: null, error: "Invalid configuration: multiple start cells" };
                 }
@@ -50,9 +50,9 @@ const parseMazeString = (mazeString: string): { result : SolveInput | null; erro
         return { result: null, error: "Invalid configuration: no treasures found" };
     }
 
-    const maze = rows.map(row => row.split(" ") as MazeSymbol[]);
+    const map = rows.map(row => row.split(" ") as MapSymbol[]);
     const result = {
-        maze: maze,
+        map: map,
         numOfTreasures: treasureCount,
         startCell: startCell as [number, number],
     };
@@ -60,43 +60,43 @@ const parseMazeString = (mazeString: string): { result : SolveInput | null; erro
 };
 
 const InputSection = ({ setSolveResult }: InputSectionProps) => {
-    const defaultInput = useMemo(() => parseMazeString(PREDEFINED_MAZES.simple.value).result!, []);
+    const defaultInput = useMemo(() => parseMapString(PREDEFINED_MAPS.simple.value).result!, []);
 
     const [solveInputState, setSolveInput] = useState<SolveInput>(defaultInput);
-    const [mazeString, setMazeString] = useState(PREDEFINED_MAZES.simple.value);
+    const [mapString, setMapString] = useState(PREDEFINED_MAPS.simple.value);
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(true);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [searchDisabled, setSearchDisabled] = useState(false);
 
-    /** Handle Maze Selection */
-    const handleSelectedMazeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value: mazeKey } = event.target;
+    /** Handle Map Selection */
+    const handleSelectedMapChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+        const { value: mapKey } = event.target;
 
-        if (mazeKey === "custom") {
-            if (!mazeString) return;
+        if (mapKey === "custom") {
+            if (!mapString) return;
 
-            setMazeString("");
+            setMapString("");
             setIsConfigReadOnly(false);
-            setSolveInput({ maze: [], numOfTreasures: 0, startCell: [-1, -1] });
+            setSolveInput({ map: [], numOfTreasures: 0, startCell: [-1, -1] });
             setSolveResult(null);
             return;
         }
 
-        const selectedMazeString = PREDEFINED_MAZES[mazeKey as keyof typeof PREDEFINED_MAZES].value;
-        setMazeString(selectedMazeString || "");
+        const selectedMapString = PREDEFINED_MAPS[mapKey as keyof typeof PREDEFINED_MAPS].value;
+        setMapString(selectedMapString || "");
         setIsConfigReadOnly(true);
 
-        const { result } = parseMazeString(selectedMazeString);
+        const { result } = parseMapString(selectedMapString);
         setSolveInput(result!);
         setSolveResult(null);
 
-    }, [mazeString, setSolveInput]);
+    }, [mapString, setSolveInput]);
 
 
     /** Handle Custom Input Parsing */
     useEffect(() => {
-        const { result, error } = parseMazeString(mazeString);
+        const { result, error } = parseMapString(mapString);
         if (error) {
             setErrorMessage(error);
             return;
@@ -104,7 +104,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
 
         setErrorMessage(null);
         setSolveInput(result!);
-    }, [mazeString, setSolveInput]);
+    }, [mapString, setSolveInput]);
 
 
     /** Handle Algorithm Selection */
@@ -117,7 +117,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
     const handleSearch = useCallback(() => {
         setSearchDisabled(true);
 
-        // Solve Maze
+        // Solve Map
         if (selectedAlgorithm === "bfs") {
             solveBFS(solveInputState).then(result => {
                 setSolveResult(result);
@@ -136,36 +136,36 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
         <section className="w-full flex flex-col gap-4">
             <SectionTitle title="Input" />
 
-            {/* Maze Selection */}
+            {/* Map Selection */}
             <div className="w-full flex flex-col gap-2">
-                <label htmlFor="maze" className="font-bold">Select a Maze</label>
+                <label htmlFor="map" className="font-bold">Select a Map</label>
                 <select
-                    name="maze"
-                    id="maze"
+                    name="map"
+                    id="map"
                     className="w-full p-2 border-2 border-main-black rounded-lg text-base"
-                    onChange={handleSelectedMazeChange}
+                    onChange={handleSelectedMapChange}
                     defaultValue="simple"
                 >
-                    <option value="custom">Custom Maze</option>
-                    {Object.entries(PREDEFINED_MAZES).map(([key, { label }]) => (
+                    <option value="custom">Custom Map</option>
+                    {Object.entries(PREDEFINED_MAPS).map(([key, { label }]) => (
                         <option key={key} value={key}>{label}</option>
                     ))}
                 </select>
             </div>
             
-            {/* Maze Configuration */}
+            {/* Map Configuration */}
             <div className="w-full flex flex-col gap-2">
-                <label htmlFor="maze-config" className="font-bold">Maze Configuration</label>
+                <label htmlFor="map-config" className="font-bold">Map Configuration</label>
                 <textarea
-                    name="maze-config"
-                    id="maze-config"
+                    name="map-config"
+                    id="map-config"
                     className="w-full p-2 border-2 border-main-black rounded-lg resize-none font-mono 
                         disabled:text-gray-500 disabled:bg-gray-200 disabled:border-gray-200"
-                    placeholder="Write your maze configuration here"
+                    placeholder="Write your map configuration here"
                     rows={8}
-                    value={mazeString}
+                    value={mapString}
                     disabled={isConfigReadOnly}
-                    onChange={(e) => setMazeString(e.target.value)}
+                    onChange={(e) => setMapString(e.target.value)}
                 />
 
                 {/* Error Message */}
@@ -177,7 +177,8 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
             {/* Algorithm Selection */}
             <div className="w-full flex flex-col gap-2">
                 <label className="font-bold">Algorithm</label>
-                <div className="w-full flex gap-1">
+                <p> The search algorithm will prioritize direction in the order of Right, Down, Up, Left </p>
+                <div className="w-full flex gap-1 mt-1">
                     <button className={`w-1/2 p-2 rounded-lg font-bold border-2 cursor-pointer
                         ${selectedAlgorithm === "bfs" 
                             ? "bg-main-red text-white border-main-red"
@@ -200,7 +201,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
             </div>
 
             {/* Search Button */}
-            <button className="w-full p-2 mt-4 bg-main-red text-white rounded-lg font-bold 
+            <button className="w-full p-2 mt-6 bg-main-red text-white rounded-lg font-bold 
                 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red cursor-pointer"
                 disabled={!!errorMessage || searchDisabled}
                 onClick={handleSearch}

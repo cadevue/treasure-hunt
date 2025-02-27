@@ -1,4 +1,4 @@
-export const PREDEFINED_MAZES = {
+export const PREDEFINED_MAPS = {
 "simple": {
     label: "Simple",
     value: [
@@ -46,8 +46,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-1": {
-    label: "Maze 1",
+"map-1": {
+    label: "Map 1",
     value: [
         "S R R R",
         "X R X T",
@@ -56,8 +56,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-2": {
-    label: "Maze 2",
+"map-2": {
+    label: "Map 2",
     value: [
         "S R R R R R X",
         "X R X T X R R",
@@ -67,8 +67,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-3": {
-    label: "Maze 3",
+"map-3": {
+    label: "Map 3",
     value: [
         "S R R R R",
         "X X R X T",
@@ -76,8 +76,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-4": {
-    label: "Maze 4",
+"map-4": {
+    label: "Map 4",
     value: [
         "S R R R",
         "R X X T",
@@ -86,8 +86,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-5": {
-    label: "Maze 5",
+"map-5": {
+    label: "Map 5",
     value: [
         "S R R R R",
         "R X X X R",
@@ -98,8 +98,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-6": {
-    label: "Maze 6",
+"map-6": {
+    label: "Map 6",
     value: [
         "S R R X X X X X X X",
         "R X R R R R R X X X",
@@ -114,8 +114,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-7": {
-    label: "Maze 7",
+"map-7": {
+    label: "Map 7",
     value: [
         "R R R R",
         "T X R R",
@@ -123,8 +123,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-8": {
-    label: "Maze 8",
+"map-8": {
+    label: "Map 8",
     value: [
         "S R R R R R",
         "X R X T X X",
@@ -133,8 +133,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-9": {
-    label: "Maze 9",
+"map-9": {
+    label: "Map 9",
     value: [
         "S R R R",
         "X X X X",
@@ -142,8 +142,8 @@ export const PREDEFINED_MAZES = {
     ].join("\n"),
 },
 
-"maze-10": {
-    label: "Maze 10",
+"map-10": {
+    label: "Map 10",
     value: [
         "R R R X X X X X X X",
         "R R X X X X X R R R",
