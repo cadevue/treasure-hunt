@@ -26,29 +26,17 @@ const ResultSection = ({ solveResult }: ResultSectionProps) => {
                             ? "No route found"
                             : solveResult.searchRoute.join(" → ")
                         }
-                    </div>
-
-                    {/* <div className="font-bold py-1">Final Route</div>
-                    <div className="font-mono text-nowrap py-1 pr-4 overflow-x-auto">
                         {
-                            solveResult.finalRoute.length === 0
-                            ? "No route found"
-                            : solveResult.finalRoute.join(" → ")
+                            !solveResult.solutionFound &&
+                            <span> (No solution)</span>
                         }
-                    </div> */}
-
+                    </div>
                     <div className="font-bold">Nodes Visited</div> 
                     <div>{solveResult.nodesVisited}</div>
 
                     <div className="font-bold">Execution Time</div>
                     <div>{solveResult.executionTime} ms</div>
                 </div>
-                {/* 
-                <p> <i> <br />
-                    Note: Final route doesn't ensure the shortest path, but rather follows the order in which the search algorithm 
-                    found the treasures. If there's only one treasure, then the final route will be the shortest path.
-                </i> </p> 
-                */}
                 </>
             }
 

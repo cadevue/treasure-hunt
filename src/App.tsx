@@ -11,14 +11,15 @@ import { SolveResult } from "./utils/types"
 
 function App() {
     const [solveResult, setSolveResult] = useState<SolveResult | null>(null)
+    const [blockAction, setBlockAction] = useState<boolean>(false)
 
     return (
         <ContentLayout>
             <div className="flex flex-col items-center gap-10 py-10">
                 <HeaderSection />
                 <InstructionSection />
-                <InputSection setSolveResult={setSolveResult} />
-                <VisualizerSection solveResult={solveResult} />
+                <InputSection setSolveResult={setSolveResult} blockAction={blockAction} />
+                <VisualizerSection solveResult={solveResult} setBlockAction={setBlockAction} />
                 <ResultSection solveResult={solveResult} />
             </div>
         </ContentLayout>

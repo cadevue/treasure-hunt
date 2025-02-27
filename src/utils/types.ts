@@ -16,14 +16,17 @@ export type Point = [number, number];
 
 export interface SolveInput {
     map: MapSymbol[][];
-    numOfTreasures: number;
     startCell: Point;
+    treasureCells: Point[];
+    numOfTreasures: number;
 }
 
 export interface SolveResult {
     map: MapSymbol[][];
+    startCell: Point;
+    treasureCells: Point[];
     searchRoute: Direction[];
-    finalRoute: Direction[];
+    solutionFound: boolean;
     nodesVisited: number;
     executionTime: DOMHighResTimeStamp;
 }

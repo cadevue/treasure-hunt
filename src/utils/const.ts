@@ -1,6 +1,6 @@
 export const PREDEFINED_MAPS = {
-"simple": {
-    label: "Simple",
+"default": {
+    label: "Default",
     value: [
         "X X X X",
         "X R R T",
@@ -176,23 +176,6 @@ export const PREDEFINED_MAPS = {
         "L U P A C E",
         "K Y A N G B",
         "E G I N I Y"
-    ].join("\n"),
-},
-
-"long": {
-    label: "Long",
-    value: [
-        "S T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
-        "X T R X",
     ].join("\n"),
 },
 }

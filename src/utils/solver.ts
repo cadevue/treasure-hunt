@@ -22,7 +22,7 @@ function findDirection(start: [number, number], end: [number, number]): Directio
     return Direction.Right;
 }
 
-export async function solveBFS({map, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
+export async function solveBFS({map, numOfTreasures, treasureCells, startCell}: SolveInput) : Promise<SolveResult> {
     const startTime = performance.now();
 
     const queue : Point[] = [];
@@ -50,8 +50,6 @@ export async function solveBFS({map, numOfTreasures, startCell}: SolveInput) : P
     }
 
     const searchRoute : Direction[] = [];
-    const treasureLocations : Point[] = [];
-    const pointsToTreasure : Map<string, Point[]> = new Map();
     
     while (queue.length > 0) {
         const [row, col] = queue.shift()!;
@@ -104,8 +102,6 @@ export async function solveBFS({map, numOfTreasures, startCell}: SolveInput) : P
 
         if (map[row][col] === MapSymbol.Treasure) {
             numOfTreasures--;
-            treasureLocations.push([row, col]);
-            pointsToTreasure.set(`${row},${col}`, allCurrentParents.reverse());
         }
 
         if (numOfTreasures === 0) break;
@@ -125,47 +121,20 @@ export async function solveBFS({map, numOfTreasures, startCell}: SolveInput) : P
         }
     }
 
-    /** Traverse to the every treasure */
-    let finalRoute : Direction[] = [];
-    let currentLocation = startCell;
-    for (const treasure of treasureLocations) {
-        const path = pointsToTreasure.get(`${treasure[0]},${treasure[1]}`)!;
-
-        while (!path.some(cell => cell[0] === currentLocation[0] && cell[1] === currentLocation[1])) {
-            const next = parentOf.get(`${currentLocation[0]},${currentLocation[1]}`)!;
-            const direction = findDirection(currentLocation, next);
-            finalRoute.push(direction);
-            currentLocation = next;
-        }
-
-        let next = path.shift()!;
-        while (next[0] !== currentLocation[0] || next[1] !== currentLocation[1]) {
-            next = path.shift()!;
-        }
-
-        for (const next of path) {
-            const direction = findDirection(currentLocation, next);
-            finalRoute.push(direction);
-            currentLocation = next;
-        }
-
-        const direction = findDirection(currentLocation, treasure);
-        finalRoute.push(direction);
-        currentLocation = treasure;
-    }
-
     const elapsedTime = performance.now() - startTime;
     
     return {
         map: map,
+        startCell: startCell,
+        treasureCells: treasureCells,
         searchRoute: searchRoute,
-        finalRoute: finalRoute,
+        solutionFound: numOfTreasures === 0,
         nodesVisited: visited.size,
         executionTime: elapsedTime,
     };
 }
 
-export async function solveDFS({map, numOfTreasures, startCell}: SolveInput) : Promise<SolveResult> {
+export async function solveDFS({map, numOfTreasures, treasureCells, startCell}: SolveInput) : Promise<SolveResult> {
     const startTime = performance.now();
 
     const stack: Point[] = [];
@@ -193,8 +162,6 @@ export async function solveDFS({map, numOfTreasures, startCell}: SolveInput) : P
     }
 
     const searchRoute: Direction[] = [];
-    const treasureLocations: Point[] = [];
-    const pointsToTreasure: Map<string, Point[]> = new Map();
 
     while (stack.length > 0) {
         const [row, col] = stack.pop()!;
@@ -247,8 +214,6 @@ export async function solveDFS({map, numOfTreasures, startCell}: SolveInput) : P
 
         if (map[row][col] === MapSymbol.Treasure) {
             numOfTreasures--;
-            treasureLocations.push([row, col]);
-            pointsToTreasure.set(`${row},${col}`, allCurrentParents.reverse());
         }
 
         if (numOfTreasures === 0) break;
@@ -268,41 +233,14 @@ export async function solveDFS({map, numOfTreasures, startCell}: SolveInput) : P
         }
     }
 
-    /** Traverse to each treasure */
-    let finalRoute: Direction[] = [];
-    let currentLocation = startCell;
-    for (const treasure of treasureLocations) {
-        const path = pointsToTreasure.get(`${treasure[0]},${treasure[1]}`)!;
-
-        while (!path.some(cell => cell[0] === currentLocation[0] && cell[1] === currentLocation[1])) {
-            const next = parentOf.get(`${currentLocation[0]},${currentLocation[1]}`)!;
-            const direction = findDirection(currentLocation, next);
-            finalRoute.push(direction);
-            currentLocation = next;
-        }
-
-        let next = path.shift()!;
-        while (next[0] !== currentLocation[0] || next[1] !== currentLocation[1]) {
-            next = path.shift()!;
-        }
-
-        for (const next of path) {
-            const direction = findDirection(currentLocation, next);
-            finalRoute.push(direction);
-            currentLocation = next;
-        }
-
-        const direction = findDirection(currentLocation, treasure);
-        finalRoute.push(direction);
-        currentLocation = treasure;
-    }
-
     const elapsedTime = performance.now() - startTime;
 
     return {
         map: map,
+        startCell: startCell,
+        treasureCells: treasureCells,
         searchRoute: searchRoute,
-        finalRoute: finalRoute,
+        solutionFound: numOfTreasures === 0,
         nodesVisited: visited.size,
         executionTime: elapsedTime,
     };

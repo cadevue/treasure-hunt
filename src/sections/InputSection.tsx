@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MapSymbol, SolveInput } from "../utils/types";
+import { MapSymbol, Point, SolveInput } from "../utils/types";
 import { PREDEFINED_MAPS } from "../utils/const";
 import { solveBFS, solveDFS } from "../utils/solver";
 
 interface InputSectionProps {
     setSolveResult: (result: any) => void;
+    blockAction: boolean;
 }
 
 const VALID_SYMBOLS = new Set(Object.values(MapSymbol));
@@ -19,6 +20,7 @@ const parseMapString = (mapString: string): { result : SolveInput | null; error:
     let invalidSymbol: string | null = null;
     let treasureCount = 0;
     let startCell = [-1, -1];
+    let treasureCells: Point[] = [];
 
     for (const row of rows) {
         const symbols = row.split(" ") as MapSymbol[];
@@ -30,6 +32,7 @@ const parseMapString = (mapString: string): { result : SolveInput | null; error:
 
             if (symbol === MapSymbol.Treasure) {
                 treasureCount++;
+                treasureCells.push([rows.indexOf(row), symbols.indexOf(symbol)]);
             }
 
             if (symbol === MapSymbol.Start) {
@@ -53,17 +56,18 @@ const parseMapString = (mapString: string): { result : SolveInput | null; error:
     const map = rows.map(row => row.split(" ") as MapSymbol[]);
     const result = {
         map: map,
+        treasureCells: treasureCells,
         numOfTreasures: treasureCount,
         startCell: startCell as [number, number],
     };
     return { result, error: null };
 };
 
-const InputSection = ({ setSolveResult }: InputSectionProps) => {
-    const defaultInput = useMemo(() => parseMapString(PREDEFINED_MAPS.simple.value).result!, []);
+const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
+    const defaultInput = useMemo(() => parseMapString(PREDEFINED_MAPS.default.value).result!, []);
 
     const [solveInputState, setSolveInput] = useState<SolveInput>(defaultInput);
-    const [mapString, setMapString] = useState(PREDEFINED_MAPS.simple.value);
+    const [mapString, setMapString] = useState(PREDEFINED_MAPS.default.value);
     const [isConfigReadOnly, setIsConfigReadOnly] = useState(true);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<"bfs" | "dfs">("bfs");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,7 +82,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
 
             setMapString("");
             setIsConfigReadOnly(false);
-            setSolveInput({ map: [], numOfTreasures: 0, startCell: [-1, -1] });
+            setSolveInput({ map: [], numOfTreasures: 0, startCell: [-1, -1], treasureCells: [] });
             setSolveResult(null);
             return;
         }
@@ -144,7 +148,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
                     id="map"
                     className="w-full p-2 border-2 border-main-black rounded-lg text-base"
                     onChange={handleSelectedMapChange}
-                    defaultValue="simple"
+                    defaultValue="default"
                 >
                     <option value="custom">Custom Map</option>
                     {Object.entries(PREDEFINED_MAPS).map(([key, { label }]) => (
@@ -203,7 +207,7 @@ const InputSection = ({ setSolveResult }: InputSectionProps) => {
             {/* Search Button */}
             <button className="w-full p-2 mt-6 bg-main-accent text-white rounded-lg font-bold 
                 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red cursor-pointer"
-                disabled={!!errorMessage || searchDisabled}
+                disabled={!!errorMessage || searchDisabled || blockAction}
                 onClick={handleSearch}
             >
                 Search

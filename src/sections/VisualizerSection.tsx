@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SectionTitle from "../components/SectionTitle";
-import { MapSymbol, SolveResult } from "../utils/types";
+import { Direction, MapSymbol, Point, SolveResult } from "../utils/types";
 
 import shipImg from "../assets/ship.png";
 import landImg from "../assets/land.png";
@@ -9,6 +9,7 @@ import treasureImg from "../assets/treasure.png";
 
 interface VisualizerSectionProps {
     solveResult: SolveResult | null;
+    setBlockAction: (block: boolean) => void;
 }
 
 const imageSources = {
@@ -18,11 +19,18 @@ const imageSources = {
     "Treasure": treasureImg,
 };
 
+const shipRotation = {
+    [Direction.Down]: 0,
+    [Direction.Up]: 180,
+    [Direction.Left]: 90,
+    [Direction.Right]: 270,
+}
+
 async function loadImages() : Promise<Record<string, HTMLImageElement>> {
     const imagePromises = Object.entries(imageSources).map(async ([name, src]) => {
         const img = new Image();
         img.src = src;
-        await img.decode();
+        await new Promise(resolve => img.onload = resolve);
         return [name, img] as const;
     });
 
@@ -30,22 +38,38 @@ async function loadImages() : Promise<Record<string, HTMLImageElement>> {
     return Object.fromEntries(images);
 }
 
-async function drawMap(canvas: HTMLCanvasElement, solveResult: SolveResult, images: Record<string, HTMLImageElement>) {
+async function drawMap(
+    canvas: HTMLCanvasElement, 
+    map: MapSymbol[][],
+    images: Record<string, HTMLImageElement>,
+    shipPosition: Point,
+    shipDirection: Direction,
+    treasurePositions: Point[],
+) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cols = solveResult.map[0].length;
-    const rows = solveResult.map.length;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!images["Land"] || 
+        !images["Water"] || 
+        !images["Ship"] || 
+        !images["Treasure"]) 
+    {
+        return;
+    }
+
+    const cols = map[0].length;
+    const rows = map.length;
     const cellSize = canvas.width / cols;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
             const x = col * cellSize;
             const y = row * cellSize;
 
-            const cell = solveResult.map[row][col];
+            const cell = map[row][col];
             switch (cell) {
                 case MapSymbol.Wall:
                     ctx.drawImage(images["Land"], x, y, cellSize, cellSize);
@@ -59,32 +83,32 @@ async function drawMap(canvas: HTMLCanvasElement, solveResult: SolveResult, imag
                     continue;
             }
 
-            if (cell === MapSymbol.Start) {
-                ctx.drawImage(images["Ship"], x, y, cellSize, cellSize);
-            } 
-
-            else if (cell === MapSymbol.Treasure) {
-                ctx.drawImage(images["Treasure"], x, y, cellSize, cellSize);
-            }
-
             ctx.strokeRect(x, y, cellSize, cellSize);
         }
+
+        treasurePositions.forEach(([row, col]) => {
+            ctx.drawImage(images["Treasure"], col * cellSize, row * cellSize, cellSize, cellSize);
+        });
+
+        const [shipRow, shipCol] = shipPosition;
+        ctx.save();
+        ctx.translate((shipCol + 0.5) * cellSize, (shipRow + 0.5) * cellSize);
+        ctx.rotate((shipRotation[shipDirection] * Math.PI) / 180);
+        ctx.drawImage(images["Ship"], -cellSize / 2, -cellSize / 2, cellSize, cellSize);
+        ctx.restore();
     }
 }
 
-const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
-    if (!solveResult) return (
-        <section className="w-full flex flex-col gap-4 items-center justify-center">
-            <SectionTitle title="Visualizer" />
-            <p className="w-full text-left">Visualization will appear here after the search has been done!</p>
-        </section>
-    );
-
+const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-    const [timePerStep, setTimePerStep] = useState(100);
+    const [speed, setSpeed] = useState(1);
     const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+    const [shipPosition, setShipPosition] = useState<Point>([0, 0]);
+    const [shipDirection, setShipDirection] = useState<Direction>(Direction.Right);
+    const [treasurePositions, setTreasurePositions] = useState<Point[]>([]);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     /** Load Images */
     useEffect(() => {
@@ -96,9 +120,9 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
         const resizeCanvas = () => {
             if (!containerRef.current) return;
             const width = containerRef.current.getBoundingClientRect().width;
-            const cols = solveResult.map[0].length;
+            const cols = solveResult!.map[0].length;
             const cellSize = width / cols;
-            const height = solveResult.map.length * cellSize;
+            const height = solveResult!.map.length * cellSize;
 
             const maxHeight = window.innerHeight * 0.75;
             if (height > maxHeight) {
@@ -115,12 +139,110 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
     }, [solveResult]);
 
     /** Handle Drawing */
-    useEffect(() => {
-        if (!canvasRef.current) return;
-        const canvas = canvasRef.current;
-        drawMap(canvas, solveResult, images);
-    }, [solveResult, canvasRef, canvasSize, images]);
+        useEffect(() => {
+        if (!canvasRef.current || !solveResult) return;
+        drawMap(canvasRef.current, solveResult.map, images, shipPosition, shipDirection, treasurePositions);
+    }, [solveResult, canvasRef, canvasSize, images, shipPosition, shipDirection, treasurePositions]);
 
+    /** Result sync */
+    useEffect(() => {
+        if (!solveResult) return
+        setShipPosition(solveResult.startCell);
+        setTreasurePositions(solveResult.treasureCells);
+    }, [solveResult]);
+
+    const speedRef = useRef(speed);
+    useEffect(() => {
+        speedRef.current = speed;
+    }, [speed]);
+
+    const animateShip = () => {
+        if (!solveResult) return;
+        setIsAnimating(true);
+        setBlockAction(true);
+
+        setShipPosition(solveResult.startCell);
+        setShipDirection(Direction.Right);
+        setTreasurePositions(solveResult.treasureCells);
+
+        let index = 0;
+        let [row, col] = solveResult.startCell;
+        let remainingTreasures = new Set(solveResult.treasureCells.map(([row, col]) => `${row},${col}`));
+        const route = solveResult.searchRoute;
+
+        let previousTime = performance.now();
+        let deltaTime = 0;
+
+        let [lerpedRow, lerpedCol] = [row, col];
+
+        function animate(timestamp: DOMHighResTimeStamp) {
+            if (index >= route.length) {
+                setIsAnimating(false);
+                setBlockAction(false);
+                return;
+            }
+
+            deltaTime = timestamp - previousTime;
+            previousTime = timestamp;
+
+            const direction = route[index];
+            let target: Point = [row, col];
+            let [nrow, ncol] = [row, col];
+            const movement = deltaTime * speedRef.current / 200;
+            switch (direction) {
+                case "U": 
+                    lerpedRow -= movement;
+                    target = [row-1, col];
+                    nrow = Math.floor(lerpedRow) + 1;
+                    break;
+                case "D": 
+                    lerpedRow += movement;
+                    target = [row+1, col];
+                    nrow = Math.floor(lerpedRow);
+                    break;
+                case "L":
+                    lerpedCol -= movement;
+                    target = [row, col-1];
+                    ncol = Math.floor(lerpedCol) + 1;
+                    break;
+                case "R":
+                    lerpedCol += movement;
+                    target = [row, col+1];
+                    ncol = Math.floor(lerpedCol);
+                    break;
+            }
+
+            const key = `${nrow},${ncol}`;
+            if (remainingTreasures.has(key)) {
+                remainingTreasures.delete(key);
+                setTreasurePositions(prev => prev.filter(([r, c]) => r !== nrow || c !== ncol));
+            }
+
+            if (nrow === target[0] && ncol === target[1]) {
+                row = target[0];
+                col = target[1];
+                lerpedRow = row;
+                lerpedCol = col;
+
+                index++;
+            }
+
+            setShipPosition([lerpedRow, lerpedCol]);
+            setShipDirection(direction);
+
+            requestAnimationFrame(animate);
+        }
+
+        animate(performance.now());
+    }
+
+    if (!solveResult) return (
+        <section className="w-full flex flex-col gap-4 items-center justify-center">
+            <SectionTitle title="Visualizer" />
+            <p className="w-full text-left">Visualization will appear here after the search has been done!</p>
+        </section>
+    );
+    
     return (
         <section className="w-full flex flex-col gap-4 items-center justify-center">
             <SectionTitle title="Visualizer" />
@@ -140,16 +262,18 @@ const VisualizerSection = ({ solveResult }: VisualizerSectionProps) => {
                 />
             </div>
             <div className="w-full flex flex-col gap-2">
-                <label htmlFor="time-per-step" className="font-bold">Time per Step (ms)</label>
+                <label htmlFor="time-per-step" className="font-bold">Speed</label>
                 <div className="w-full flex items-center gap-2">
                     <input type="range" id="time-per-step"  
-                        value={timePerStep} onChange={e => setTimePerStep(parseInt(e.target.value))}
-                        min={0} max={1000} step={10}
+                        value={speed} onChange={e => setSpeed(parseFloat(e.target.value))}
+                        min={0.25} max={5} step={0.05}
                     />
-                    <span>{timePerStep}</span>
+                    <span>{speed.toFixed(2)}x</span>
                 </div>
             </div>
-            <button className="w-full p-2 bg-main-accent text-white rounded-lg font-bold">
+            <button className="w-full p-2 bg-main-accent text-white rounded-lg font-bold cursor-pointer disabled:opacity-50"
+                onClick={animateShip} disabled={isAnimating}
+            >
                 Run Visualization
             </button>
             </>
