@@ -79,7 +79,8 @@ const InputSection = ({ setSolveResult, blockAction }: InputSectionProps) => {
         setMapString(selectedMapString);
         setIsConfigReadOnly(true);
 
-        const { result } = parseMapString(selectedMapString);
+        const { result, error } = parseMapString(selectedMapString);
+        setErrorMessage(error);
         if (result) setSolveInput(result);
     }, [resetState]);
 

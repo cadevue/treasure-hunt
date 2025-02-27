@@ -126,7 +126,7 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
             const cellSize = width / cols;
             const height = solveResult!.map.length * cellSize;
 
-            const maxHeight = window.innerHeight * 0.75;
+            const maxHeight = window.innerHeight * 0.64;
             if (height > maxHeight) {
                 const scale = maxHeight / height;
                 setCanvasSize({ width: width * scale, height: height * scale });
@@ -280,7 +280,7 @@ const VisualizerSection = ({ solveResult, setBlockAction }: VisualizerSectionPro
                     <span>{speed.toFixed(2)}x</span>
                 </div>
             </div>
-            <button className="w-full p-2 bg-main-accent text-white rounded-lg font-bold cursor-pointer disabled:opacity-50"
+            <button className="w-full p-2 mt-6 bg-main-accent text-white rounded-lg font-bold cursor-pointer disabled:opacity-50"
                 onClick={animateShip} disabled={isAnimating}
             >
                 Run Visualization

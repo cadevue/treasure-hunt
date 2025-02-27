@@ -19,7 +19,7 @@ h2 {
 }
 
 input[type="range"] {
-  @apply appearance-none cursor-pointer w-full h-1 bg-gray-500 rounded-full disabled:opacity-50;
+  @apply appearance-none cursor-pointer w-full h-1.5 bg-gray-500 rounded-full disabled:opacity-50;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -31,5 +31,5 @@ input[type="range"]::-moz-range-thumb {
 }
 
 input[type="range"]::-moz-range-progress {
-  @apply bg-main-accent h-1 rounded-full outline-none border-none;
+  @apply bg-main-accent h-1.5 rounded-full outline-none border-none;
 }
