@@ -1,50 +1,36 @@
-# React + TypeScript + Vite
+<h1 align="center">Treasure Hunt 🧭<br>BFS-DFS Algorithm Visualization</h1>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> This project is part of my CS202 Challenge. More details about it on [my website](https://cadevue.com)! (updated soon)
 
-Currently, two official plugins are available:
+# Try Now!
+This application can be tried out immediately! The web application can be accessed in this link: <br>
+https://treasure-hunt-lake.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Project Description 
+A web application that solve the treasure hunt problem using Breadth First Search (BFS) and Depth First Search (DFS) algorithm. The application visualize how a ship traverse the ocean (grid-based) map to find the treasure using the two algorithms.
 
-## Expanding the ESLint configuration
+The technologies used for the application are:
+- **React** as the frontend framework
+- **Typescript** as the language
+- **Vite** for the frontend bundler
+- **TailwindCSS** for the styling
+- **Vercel** for the deployment
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+# Deployment
+The web application can be accessed in this link: <br>
+https://treasure-hunt-lake.vercel.app/
 
-- Configure the top-level `parserOptions` property like this:
+# Screenshots 
+Here are some screenshots of the treasure hunt application.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Instruction
+![Treasure Hunt Screenshot - Instruction](./docs/instruction.png)
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Input Section
+![Treasure Hunt Screenshot - Input Section](./docs/input.png)
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Algorithm Visualization
+![Treasure Hunt Screenshot - Algorithm Visualization](./docs/visual.gif)
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Result Summary
+![Treasure Hunt Screenshot - Result Summary](./docs/result.png)
